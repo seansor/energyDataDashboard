@@ -58,7 +58,7 @@ function makeTFCGraphs(data) {
 
         d.Year = parseInt(d.Year, 10);
 
-        d.ktoe = parseFloat(d.ktoe.replace(/,/g, ''));
+        d.ktoe = parseInt(d.ktoe.replace(/,/g, ''),10);
 
         d.Sector == "Transport" ? d.sectorNum = 5 :
             d.Sector == "Residential" ? d.sectorNum = 4 :
@@ -125,18 +125,8 @@ function makeTFCSectorGraph(ndx) {
         return {};
     });
 
-    function remove_competely_empty_bins(source_group) {
-          return {
-              all:function () {
-                  return source_group.all().filter(function(d) {
-                     return Object.values(d.value).some(v => v!=0);
 
-                  });
-              }
-          };
-      }
-
-    var filtered_group = remove_empty_bins(energySumGroup); // or filter_bins, or whatever
+    var filtered_group = remove_competely_empty_bins(energySumGroup); // fake groups to remove 0 value bins
 
 
     function sel_stack(i) {
@@ -144,7 +134,6 @@ function makeTFCSectorGraph(ndx) {
             return d.value[i];
         };
     }
-
 
     var chart = dc.lineChart("#test");
 
@@ -163,11 +152,7 @@ function makeTFCSectorGraph(ndx) {
         .clipPadding(10)
         .yAxisLabel("This is the Y Axis!")
         .dimension(year_dim)
-        .group(filtered_group)
-        .group(energySumGroup, '1', sel_stack('1'));
-
-
-
+        .group(filtered_group, '1', sel_stack('1'));
 
 
     chart.legend(dc.legend().x(75).y(10).itemHeight(13).gap(5)
@@ -175,7 +160,6 @@ function makeTFCSectorGraph(ndx) {
             var sectors = ["Agri & Fisheries", "Services", "Industry", "Residential", "Transport"];
             return (sectors[d.name - 1]);
         }));
-
 
 
     dc.override(chart, 'legendables', chart._legendables);
@@ -195,8 +179,59 @@ function makeTFCSectorGraph(ndx) {
     chart.xAxis().tickFormat(d3.format('d'));
 
     for (var i = 2; i < 6; i++) {
-        chart.stack(energySumGroup, '' + i, sel_stack(i));
+        chart.stack(filtered_group, '' + i, sel_stack(i));
     }
+    
+    //Need to revisit this to remove 0 value bins
+    
+    function remove_competely_empty_bins(sourceGroup) {
+          return {
+              all:function () {
+                  return sourceGroup.all().filter(function(d) {
+                     for(i=0; i<5; i++){
+                     return Object.values(d.value).some(v => v!=0);
+                     }
+                  });
+              }
+          };
+      }
+      
+      //render barchart
+      
+     var barchart = dc.barChart("#test2");
+
+    barchart
+        .width(600)
+        .height(480)
+        .x(d3.scaleLinear().domain([minDate, maxDate]))
+        .margins({ left: 50, top: 10, right: 10, bottom: 20 })
+        .renderTitle(true)
+        .brushOn(false)
+        .title(function(d) {
+            var sectors = ["Agri & Fisheries", "Services", "Industry", "Residential", "Transport"];
+            return sectors[this.layer - 1] + ': ' + d.value[this.layer].toFixed(2);
+        })
+        .clipPadding(10)
+        .yAxisLabel("This is the Y Axis!")
+        .dimension(year_dim)
+        .group(filtered_group, '1', sel_stack('1'));
+
+
+    barchart.legend(dc.legend().x(75).y(10).itemHeight(13).gap(5)
+        .legendText(function(d) {
+            var sectors = ["Agri & Fisheries", "Services", "Industry", "Residential", "Transport"];
+            return (sectors[d.name - 1]);
+        }));
+        
+        dc.override(barchart, 'legendables', function() {
+              var items = barchart._legendables();
+              return items.reverse();
+          });
+        
+    for (var i = 2; i < 6; i++) {
+        barchart.stack(filtered_group, '' + i, sel_stack(i));
+    }
+    
 
 }
 
