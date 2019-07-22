@@ -8,16 +8,17 @@
     
     <link rel="stylesheet" href="static/css/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="static/css/dc.min.css" type="text/css" />
+    <link rel="stylesheet" href="static/css/style.css" type="text/css" />
     
     <script
         src="https://code.jquery.com/jquery-3.4.1.min.js"
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
         crossorigin="anonymous"></script>
-    <script type="text/javascript" src="static/js/jquery.js"></script>
+    <script type="text/javascript" src="static/js/main.js"></script>
     <script type="text/javascript" src="static/js/d3.min.js"></script>
     <script type="text/javascript" src="static/js/crossfilter.min.js"></script>
     <script type="text/javascript" src="static/js/dc.min.js"></script>
-    <script type="text/javascript" src="static/js/graph1.js"></script>
+    <script type="text/javascript" src="static/js/graph.js"></script>
 
     
     
@@ -39,19 +40,45 @@
             <h2>Test</h2>
             <div id="sector-selector"></div>
         </div>
+        <div class="col-md-6">
+            <select id="yearSelector">
+                <option value="areaChart">1990-2017</option>
+                <option value="barChart">10 Year</option>
+                <option value="pieChart">2017</option>
+            </select>
+            <div id="date-selector"></div>
+        </div>
     </div>
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-6 tfcChart areaChart">
             <h2>Final Energy By Sector</h2>
+            <h4>1990-2017</h4>
             <div id="test"></div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6 tfcChart areaChart">
             <h2>Final Energy By Fuel</h2>
+            <h4>1990-2017</h4>
             <div id="test1"></div>
         </div>
-        <div class="col-md-6">
-            <h2>Final Energy By Fuel</h2>
+        <div class="col-md-6 tfcChart tfcChartHidden barChart">
+            <h2>Final Energy By Sector</h2>
+            <h4>2008-2017</h4>
             <div id="test2"></div>
+        </div>
+        <div class="col-md-6 tfcChart tfcChartHidden barChart">
+            <h2>Final Energy By Fuel</h2>
+            <h4>2008-2017</h4>
+            <div id="test3"></div>
+        </div>
+        <div class="col-md-6 tfcChart tfcChartHidden pieChart">
+            <h2>Final Energy By Sector</h2>
+            <h4>2017</h4>
+            <div id="test4"></div>
+        </div>
+        <div class="col-md-6 tfcChart tfcChartHidden pieChart">
+            <h2>Final Energy By Fuel</h2>
+            <h4>2017</h4>
+            <div id="test5"></div>
         </div>
     </div>
     

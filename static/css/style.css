@@ -1,0 +1,8 @@
+.tfcChart {
+    transition: all 2s ease-in-out;
+}
+
+.tfcChartHidden{
+    transition: all 2s ease-in-out;
+    display: none;
+}

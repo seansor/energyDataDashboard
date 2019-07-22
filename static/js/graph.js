@@ -4,6 +4,7 @@ Promise.all([
 ]).then(function(datafile) {
     makePopGraph(datafile[0]);
     makeTFCGraphs(datafile[1]);
+    makeTFCPieCharts(datafile[1]);
 });
 
 
@@ -58,7 +59,7 @@ function makeTFCGraphs(data) {
 
         d.Year = parseInt(d.Year, 10);
 
-        d.ktoe = parseFloat(d.ktoe.replace(/,/g, ''));
+        d.ktoe = parseInt(d.ktoe.replace(/,/g, ''),10);
 
         d.Sector == "Transport" ? d.sectorNum = 5 :
             d.Sector == "Residential" ? d.sectorNum = 4 :
@@ -77,42 +78,37 @@ function makeTFCGraphs(data) {
 
 
     var ndx = crossfilter(data);
-    show_sector_selector(ndx);
-    makeTFCSectorGraph(ndx);
-    makeTFCFuelTypeGraph(ndx);
-
-
+    sector_selector(ndx);
+    makeTFCSectorGraphs(ndx);
+    makeTFCFuelTypeGraphs(ndx);
 
 
     dc.renderAll();
 }
 
-function show_sector_selector(ndx) {
+//Sector select Menu
+
+function sector_selector(ndx) {
     var dim = ndx.dimension(function(d) { return d.Sector });
     var group = dim.group();
     var select = dc.selectMenu("#sector-selector")
         .dimension(dim)
         .group(group);
 
-
     select.title(function(d) {
         return d.key;
     });
-
-    /*    select.filterDisplayed(function () {
-            return false;
-        });*/
-
 }
 
-function makeTFCSectorGraph(ndx) {
+
+//Total Final Consumption (TFC)/Total Final Energy Graphs
+
+function makeTFCSectorGraphs(ndx) {
+    
     var year_dim = ndx.dimension(dc.pluck('Year'));
-
-
 
     var minDate = year_dim.bottom(1)[0].Year;
     var maxDate = year_dim.top(1)[0].Year;
-
 
     var energySumGroup = year_dim.group().reduce(function(p, v) {
 
@@ -125,19 +121,7 @@ function makeTFCSectorGraph(ndx) {
         return {};
     });
 
-    function remove_competely_empty_bins(source_group) {
-          return {
-              all:function () {
-                  return source_group.all().filter(function(d) {
-                     return Object.values(d.value).some(v => v!=0);
-
-                  });
-              }
-          };
-      }
-
-    var filtered_group = remove_empty_bins(energySumGroup); // or filter_bins, or whatever
-
+    var filtered_group = remove_competely_empty_bins(energySumGroup); // fake groups to remove 0 value bins
 
     function sel_stack(i) {
         return function(d) {
@@ -145,13 +129,12 @@ function makeTFCSectorGraph(ndx) {
         };
     }
 
-
     var chart = dc.lineChart("#test");
 
     chart
         .width(600)
         .height(480)
-        .x(d3.scaleLinear().domain([minDate, maxDate]))
+        .x(d3.scaleLinear().domain([minDate, maxDate+1]))
         .margins({ left: 50, top: 10, right: 10, bottom: 20 })
         .renderTitle(true)
         .renderArea(true)
@@ -163,13 +146,10 @@ function makeTFCSectorGraph(ndx) {
         .clipPadding(10)
         .yAxisLabel("This is the Y Axis!")
         .dimension(year_dim)
-        .group(filtered_group)
-        .group(energySumGroup, '1', sel_stack('1'));
+        .group(filtered_group, '1', sel_stack('1'));
 
-
-
-
-
+    chart.xAxis().tickFormat(d3.format('d'));
+    
     chart.legend(dc.legend().x(75).y(10).itemHeight(13).gap(5)
         .legendText(function(d) {
             var sectors = ["Agri & Fisheries", "Services", "Industry", "Residential", "Transport"];
@@ -177,7 +157,7 @@ function makeTFCSectorGraph(ndx) {
         }));
 
 
-
+    //reverse order of legend to match order of chart
     dc.override(chart, 'legendables', chart._legendables);
 
     dc.override(chart, 'legendables', function() {
@@ -190,17 +170,66 @@ function makeTFCSectorGraph(ndx) {
             return l.reverse();
         });
     });
-
-
-    chart.xAxis().tickFormat(d3.format('d'));
+    
+    //loop to stack each sector
 
     for (var i = 2; i < 6; i++) {
-        chart.stack(energySumGroup, '' + i, sel_stack(i));
+        chart.stack(filtered_group, '' + i, sel_stack(i));
     }
+    
+    //Need to revisit this to remove 0 value bins
+    
+    function remove_competely_empty_bins(sourceGroup) {
+          return {
+              all:function () {
+                  return sourceGroup.all().filter(function(d) {
+                     for(i=0; i<5; i++){
+                     return Object.values(d.value).some(v => v!=0);
+                     }
+                  });
+              }
+          };
+      }
+      
+    //render barchart
+      
+    var barChart = dc.barChart("#test2");
 
+    barChart
+        .width(400)
+        .height(480)
+        .x(d3.scaleLinear().domain([2008, maxDate+1]))
+        .margins({ left: 50, top: 10, right: 10, bottom: 20 })
+        .renderTitle(true)
+        .brushOn(false)
+        .title(function(d) {
+            var sectors = ["Agri & Fisheries", "Services", "Industry", "Residential", "Transport"];
+            return sectors[this.layer - 1] + ': ' + d.value[this.layer].toFixed(2);
+        })
+        .clipPadding(10)
+        .yAxisLabel("This is the Y Axis!")
+        .dimension(year_dim)
+        .group(filtered_group, '1', sel_stack('1'));
+
+
+    barChart.legend(dc.legend().x(75).y(10).itemHeight(13).gap(5)
+        .legendText(function(d) {
+            var sectors = ["Agri & Fisheries", "Services", "Industry", "Residential", "Transport"];
+            return (sectors[d.name - 1]);
+        }));
+        
+        dc.override(barChart, 'legendables', function() {
+              var items = barChart._legendables();
+              return items.reverse();
+          });
+        
+    for (var i = 2; i < 6; i++) {
+        barChart.stack(filtered_group, '' + i, sel_stack(i));
+    }
+    
 }
 
-function makeTFCFuelTypeGraph(ndx) {
+function makeTFCFuelTypeGraphs(ndx) {
     var year_dim = ndx.dimension(dc.pluck('Year'));
 
     var minDate = year_dim.bottom(1)[0].Year;
@@ -222,12 +251,13 @@ function makeTFCFuelTypeGraph(ndx) {
             return d.value[i];
         };
     }
+    
     var chart = dc.lineChart("#test1");
 
     chart
         .width(600)
         .height(480)
-        .x(d3.scaleLinear().domain([minDate, maxDate]))
+        .x(d3.scaleLinear().domain([minDate, maxDate+1]))
         .margins({ left: 50, top: 10, right: 10, bottom: 20 })
         .renderTitle(true)
         .title(function(d) {
@@ -240,6 +270,8 @@ function makeTFCFuelTypeGraph(ndx) {
         .yAxisLabel("This is the Y Axis!")
         .dimension(year_dim)
         .group(energySumGroup, '1', sel_stack('1'));
+
+    chart.xAxis().tickFormat(d3.format('d'));
 
     chart.legend(dc.legend().x(100).y(10).itemHeight(13).gap(5)
         .legendText(function(d) {
@@ -260,10 +292,105 @@ function makeTFCFuelTypeGraph(ndx) {
         });
     });
 
-    chart.xAxis().tickFormat(d3.format('d'));
-
     for (var i = 2; i < 8; i++) {
         chart.stack(energySumGroup, '' + i, sel_stack(i));
     }
+    
+    //render barchart
+      
+    var barchart = dc.barChart("#test3");
+
+    barchart
+        .width(400)
+        .height(480)
+        .x(d3.scaleLinear().domain([2008, maxDate+1]))
+        .margins({ left: 50, top: 10, right: 10, bottom: 20 })
+        .renderTitle(true)
+        .brushOn(false)
+        .title(function(d) {
+            var sectors = ["Agri & Fisheries", "Services", "Industry", "Residential", "Transport"];
+            return sectors[this.layer - 1] + ': ' + d.value[this.layer].toFixed(2);
+        })
+        .clipPadding(10)
+        .yAxisLabel("This is the Y Axis!")
+        .dimension(year_dim)
+        .group(energySumGroup, '1', sel_stack('1'));
+
+
+    barchart.legend(dc.legend().x(75).y(10).itemHeight(13).gap(5)
+        .legendText(function(d) {
+            var fuels = ["Oil", "Natural Gas", "Electricity", "Renewable", "Peat", "Coal", "Non-Renewable Waste"];
+            return (fuels[d.name - 1]);
+        }));
+        
+        dc.override(barchart, 'legendables', function() {
+              var items = barchart._legendables();
+              return items.reverse();
+          });
+        
+    for (var i = 2; i < 8; i++) {
+        barchart.stack(energySumGroup, '' + i, sel_stack(i));
+    }
+    
+
+}
+
+function makeTFCPieCharts(data) {
+
+    //Render Pie Chart
+    
+    var ndx = crossfilter(data);
+    var pieChart1 = dc.pieChart("#test4");
+    var pieChart2 = dc.pieChart("#test5");
+    
+    var year_dim = ndx.dimension(dc.pluck('Year'));
+
+    
+    year_dim.filter(function(d) {
+        return d === 2017;
+    });
+    
+    var sector_dim = ndx.dimension(dc.pluck('Sector'));
+    var fuel_dim = ndx.dimension(dc.pluck('Fuel'));
+
+    var sectorSumGroup = sector_dim.group().reduceSum(function(d) {return d.ktoe;});
+    var fuelSumGroup = fuel_dim.group().reduceSum(function(d) {return d.ktoe;});
+
+   
+    
+    pieChart1
+      .width(768)
+      .height(480)
+      .innerRadius(100)
+      .dimension(sector_dim)
+      .group(sectorSumGroup)
+      .legend(dc.legend())
+      // workaround for #703: not enough data is accessible through .label() to display percentages
+      .on('pretransition', function(pieChart1) {
+          pieChart1.selectAll('text.pie-slice').text(function(d) {
+              return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';
+          });
+      });
+      
+      pieChart1.ordinalColors(['#1f78b4', '#b2df8a', '#cab2d6']);
+    
+    pieChart2
+        .width(768)
+        .height(480)
+        .innerRadius(100)
+        .dimension(fuel_dim)
+        .group(fuelSumGroup)
+        .legend(dc.legend())
+        // workaround for #703: not enough data is accessible through .label() to display percentages
+        .on('pretransition', function(pieChart1) {
+            pieChart1.selectAll('text.pie-slice').text(function(d) {
+                return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';
+            });
+        });
+        
+        pieChart2.ordinalColors(['#1f78b4', '#b2df8a', '#cab2d6']);
+        
+        
+    dc.renderAll();
 
 }
