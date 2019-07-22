@@ -1,14 +1,8 @@
-         ___        ______     ____ _                 _  ___  
-        / \ \      / / ___|   / ___| | ___  _   _  __| |/ _ \ 
-       / _ \ \ /\ / /\___ \  | |   | |/ _ \| | | |/ _` | (_) |
-      / ___ \ V  V /  ___) | | |___| | (_) | |_| | (_| |\__, |
-     /_/   \_\_/\_/  |____/   \____|_|\___/ \__,_|\__,_|  /_/ 
- ----------------------------------------------------------------- 
+# Energy Data Dashboard
 
+Interactive Frontend Development Milestone Project 2 - Code Institute 
 
-Hi there! Welcome to AWS Cloud9!
-
-To get started, create some files, play with the terminal,
-or visit https://docs.aws.amazon.com/console/cloud9/ for our documentation.
-
-Happy coding!
+This is a dashboard that allows users to see a breakdown of Ireland's Final Energy Consumption (Total Final Consumption [TFC]) 
+by sector and by fuel type, as well as a breakdown of Ireland's Greenhouse gas/CO2 emissions.
+The dashboard is primarily aimed at academics, researchers and professionals working in the energy industry or concerned with
+energy policy but the data should be digestible to any readers with some knowledge of energy and greenhouse gas metrics.
