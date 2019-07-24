@@ -1,87 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Energy Statistics</title>
-    
-    <link rel="stylesheet" href="static/css/bootstrap.min.css" type="text/css" />
+
+    <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.3.1/spacelab/bootstrap.min.css" rel="stylesheet" integrity="sha384-sZG5VVk41YqhJjYXgJFoRVd3d2AdDgy4oyIytQJMGx/Mizz1N+5bgKQBSCGfKQnP" crossorigin="anonymous">
+    <!--<link rel="stylesheet" href="static/css/bootstrap.min.css" type="text/css" />-->
     <link rel="stylesheet" href="static/css/dc.min.css" type="text/css" />
     <link rel="stylesheet" href="static/css/style.css" type="text/css" />
+
+    <script src="https://kit.fontawesome.com/1a835116da.js"></script>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light justify-content-between">
+        <a class="navbar-brand" href="#"><i class="fas fa-leaf"></i>Energy Statistics Dashboard</a>
+        <span><em>Ireland's Energy and Carbon Statistics</em></span>
+    </nav>
+
+    <section class="Population_GNI">
+        <h1 class="section-heading">Population and Economic Data</h1>
+        <div class="row keyStats">
+            <div class="col-md-4 col-lg-3">
+                <h1><i class="fas fa-users"></i> 4.86 million</h1>
+                <p>Population estimate as of April 2018: the combined effect of natural increase and positive net migration.</p>
+            </div>
+            <div class="d-none d-lg-inline-block col-lg-3">
+                <h1><i class="fas fa-users"></i> 64,500</h1>
+                <p>Population growth in the year to April 2018, the largest annual increase since 2008</p>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <h1><i class="fas fa-search-dollar"></i>3%</h1>
+                <p>
+                    Increase in Modified Gross National Income (GNI*) at current market prices from 2016-2017, rising from €175.8bn to €181.2bn.
+                </p>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <h1><i class="fas fa-industry"></i>41%</h1>
+                <p>Contribution of Industry excluding construction to the growth (2016-2017). Information and communication contributed another 22.3%.</p>
+            </div>
+        </div>
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h4 class="graph-heading">Population</h4>
+                </div>
+                <div class="col-lg-6">
+                    <h4 class="graph-heading">GNI</h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6 population-chart">
+                    <div id="population-chart"></div>
+                </div>
+                <div class="col-lg-6 gni-chart">
+                    <div id="gni-chart"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6 chart-info">
+                    <p>
+                        The number of immigrants to the State in the year to April 2018 is estimated to have increased by 6.7% from 84,600 to 90,300 while the number of emigrants declined over the same period, from 64,800 to 56,300 (-13.1%). These combined changes have resulted
+                        in net inward migration for Ireland in 2018 of 34,000, the highest level of net inward migration since 2008. The combined effect of natural increase and positive net migration resulted in an overall increase in the population of
+                        64,500 bringing the population estimate to 4.86 million in April 2018.
+                    </p>
+                </div>
+                <div class="col-lg-6 chart-info">
+                    <p>
+                        Energy use is usually linked to economic activity. A growing economy leads to more goods being produced, purchased, transported, and more disposable income for people spend on travel or on heating their homes. GDP is the most commonly used indicator for
+                        economic growth but in Ireland GDP can be disproportionatly affected by the accounting of large multinationals. An alternative measure of economic activity developed by the Central Statistics Office is modified GNI.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr>
+
+    <section class="container-fluid energyStats">
+        <h1 class="section-heading">Energy Statistics</h1>
+        <div class="row keyStats">
+            <div class="col-md-4">
+                <h1><i class="fas fa-chart-line"></i>+0.5%</h1>
+                <p>Increase in overall energy use in 2017</p>
+            </div>
+            <div class="col-md-4">
+                <h1><i class="fas fa-car"></i>42.9%</h1>
+                <p>
+                    Transports share of final energy use in 2017. Transport continues to dominate Ireland’s energy use and experienced a 2.0% increase in energy use in 2017.
+                </p>
+            </div>
+            <div class="col-md-4">
+                <h1><i class="fas fa-gas-pump"></i>57.5%</h1>
+                <p>Oil's share of Final Energy Consumption in 2017. Oil continues to be the dominant energy source. It accounted for over 96% of TFC in transport in 2017.</p>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-3">
+                <label for="year_selector">Select Years:</label>
+                <select id="year_selector">
+                    <option value="pieChart">2017</option>
+                    <option value="barChart">10 Yrs</option>
+                    <option value="areaChart">Max</option>
+                </select>
+                <div class="selector-container chartHidden">
+                    <div id="sector_selector">
+                        <label for="sector_selector">Select Sector:</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 tfcGraphTitles justify-content-center">
+                <h2>Final Energy By Sector</h2>
+            </div>
+            <div class="col-md-6 tfcGraphTitles">
+                <h2>Final Energy By Fuel</h2>
+            </div>
+            <div class="col-md-6 tfcChart-container pieChart">
+                <h4>2017</h4>
+                <div id="TFCbySector_pie" class="tfcChart"></div>
+            </div>
+            <div class="col-md-6 tfcChart-container pieChart">
+                <h4>2017</h4>
+                <div id="TFCbyFuel_pie" class="tfcChart"></div>
+            </div>
+            <div class="col-md-6 tfcChart-container tfcChartHidden barChart">
+                <h4>2008-2017</h4>
+                <div id="TFCbySector_bar" class="tfcChart"></div>
+            </div>
+            <div class="col-md-6 tfcChart-container tfcChartHidden barChart">
+                <h4>2008-2017</h4>
+                <div id="TFCbyFuel_bar" class="tfcChart"></div>
+            </div>
+            <div class="col-md-6 tfcChart-container tfcChartHidden areaChart">
+                <h4>1990-2017</h4>
+                <div id="TFCbySector_area" class="tfcChart_dc"></div>
+            </div>
+            <div class="col-md-6 tfcChart-container tfcChartHidden areaChart">
+                <h4>1990-2017</h4>
+                <div id="TFCbyFuel_area" class="tfcChart"></div>
+            </div>
+        </div>
+    </section>
     
-    <script
-        src="https://code.jquery.com/jquery-3.4.1.min.js"
-        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
-        crossorigin="anonymous"></script>
-    <script type="text/javascript" src="static/js/main.js"></script>
+    <hr>
+
+    <section class="container-fluid carbonStats">
+        <h1 class="section-heading">Greenhouse Gas/CO2 Emissions</h1>
+        <div class="row keyStats">
+            <div class="col-md-4">
+                <h1><i class="fas fa-chart-line"></i>32%</h1>
+                <p>Higher CO₂ emissions intensity than European average in 2016</p>
+            </div>
+            <div class="col-md-4">
+                <h1><i class="fas fa-plug"></i>60%</h1>
+                <p>
+                    of total greenhouse gas emissions were from energy use in 2017
+                </p>
+            </div>
+            <div class="col-md-4">
+                <h1><i class="fas fa-wind-turbine"></i>4.2 MtCO₂</h1>
+                <p>Reduction in CO₂ emissions by use of renewable energy</p>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-3">
+                <label for="year_selector">Select Years:</label>
+                <select id="year_selector">
+                    <option value="pieChart">2017</option>
+                    <option value="barChart">10 Yrs</option>
+                    <option value="areaChart">Max</option>
+                </select>
+                <div class="selector-container chartHidden">
+                    <div id="sector_selector">
+                        <label for="sector_selector">Select Sector:</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 tfcGraphTitles justify-content-center">
+                <h2>Greenhouse Gas Emissions</h2>
+            </div>
+            <div class="col-md-6 tfcGraphTitles">
+                <h2>Greenhouse Gas Emissions</h2>
+            </div>
+            <div class="col-md-6 tfcChart-container pieChart">
+                <h4>2017</h4>
+                <div id="TFCbySector_pie" class="tfcChart"></div>
+            </div>
+            <div class="col-md-6 tfcChart-container pieChart">
+                <h4>2017</h4>
+                <div id="TFCbyFuel_pie" class="tfcChart"></div>
+            </div>
+            <div class="col-md-6 tfcChart-container tfcChartHidden barChart">
+                <h4>2008-2017</h4>
+                <div id="TFCbySector_bar" class="tfcChart"></div>
+            </div>
+            <div class="col-md-6 tfcChart-container tfcChartHidden barChart">
+                <h4>2008-2017</h4>
+                <div id="TFCbyFuel_bar" class="tfcChart"></div>
+            </div>
+            <div class="col-md-6 tfcChart-container tfcChartHidden areaChart">
+                <h4>1990-2017</h4>
+                <div id="TFCbySector_area" class="tfcChart_dc"></div>
+            </div>
+            <div class="col-md-6 tfcChart-container tfcChartHidden areaChart">
+                <h4>1990-2017</h4>
+                <div id="TFCbyFuel_area" class="tfcChart"></div>
+            </div>
+        </div>
+    </section>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script type="text/javascript" src="static/js/d3.min.js"></script>
     <script type="text/javascript" src="static/js/crossfilter.min.js"></script>
     <script type="text/javascript" src="static/js/dc.min.js"></script>
     <script type="text/javascript" src="static/js/graph.js"></script>
+    <script type="text/javascript" src="static/js/main.js"></script>
 
-    
-    
-</head>
-<body>
-    <h1>Population and Economic (GDP) Data</h1>
-    <div class="row">
-        <div class="col-md-6">
-            <h2>Population</h2>
-            <div id="population-chart"></div>
-        </div>
-        <div class="col-md-6">
-            <h2>GDP</h2>
-            <div id="gdp-chart"></div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-6">
-            <h2>Test</h2>
-            <div id="sector-selector"></div>
-        </div>
-        <div class="col-md-6">
-            <select id="yearSelector">
-                <option value="areaChart">1990-2017</option>
-                <option value="barChart">10 Year</option>
-                <option value="pieChart">2017</option>
-            </select>
-            <div id="date-selector"></div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-6 tfcChart areaChart">
-            <h2>Final Energy By Sector</h2>
-            <h4>1990-2017</h4>
-            <div id="test"></div>
-        </div>
-        <div class="col-md-6 tfcChart areaChart">
-            <h2>Final Energy By Fuel</h2>
-            <h4>1990-2017</h4>
-            <div id="test1"></div>
-        </div>
-        <div class="col-md-6 tfcChart tfcChartHidden barChart">
-            <h2>Final Energy By Sector</h2>
-            <h4>2008-2017</h4>
-            <div id="test2"></div>
-        </div>
-        <div class="col-md-6 tfcChart tfcChartHidden barChart">
-            <h2>Final Energy By Fuel</h2>
-            <h4>2008-2017</h4>
-            <div id="test3"></div>
-        </div>
-        <div class="col-md-6 tfcChart tfcChartHidden pieChart">
-            <h2>Final Energy By Sector</h2>
-            <h4>2017</h4>
-            <div id="test4"></div>
-        </div>
-        <div class="col-md-6 tfcChart tfcChartHidden pieChart">
-            <h2>Final Energy By Fuel</h2>
-            <h4>2017</h4>
-            <div id="test5"></div>
-        </div>
-    </div>
-    
 
 </body>
+
 </html>

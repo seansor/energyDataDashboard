@@ -1,8 +1,119 @@
-.tfcChart {
-    transition: all 2s ease-in-out;
+nav .navbar-brand {
+    font-size: 24px;
 }
 
+nav .fas {
+    padding-right: 10px;
+}
+
+
+/*.keyStats {
+    margin-bottom
+}
+*/
+.keyStats .fas {
+    padding-right: 10px;
+}
+
+/*edits required to make graphs responsive*/
+
+/*.tfcChart-container {
+    height: 600px;
+    width: 80%;
+    transition: all 2s ease-in-out;
+}*/
+
+/*.pieChart {
+    height: 400px;
+    width: 80%;
+    transition: all 2s ease-in-out;
+}*/
+
+/*.tfcChart {
+    height: 100%;
+    width: 100%;
+}
+*/
 .tfcChartHidden{
     transition: all 2s ease-in-out;
     display: none;
+}
+
+.section-heading {
+    text-align: center;
+    background-color: #f5f5f5;
+    color:#39827d;
+    margin-bottom: 0;
+    padding-bottom: 25px;
+    padding-top: 25px;
+}
+
+.keyStats {
+    /*text-align: center;*/
+    background-color: #39827d;
+}
+
+.keyStats, .keyStats h1 {
+    color: white;
+}
+
+.keyStats div:first-child {
+    padding-left: 25px;
+}
+
+hr {
+    /*background-color: #4f4f4f;*/
+    width: 80%;
+    height: 1px;
+}
+
+.gni-chart {
+    height: 400px;
+    /*width: 600px;*/
+}
+
+#gni-chart {
+    height: 100%;
+    width: 100%;
+}
+
+.population-chart {
+    height: 400px;
+    /*width: 600px;*/
+}
+
+#population-chart {
+    height: 100%;
+    width: 100%;
+}
+
+.graph-heading {
+    text-align: center;
+}
+
+.chartHidden {
+    display: none;
+}
+
+/*.dc-chart path.area {
+    fill-opacity: .5;
+}*/
+
+.energyStats .section-heading {
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
+.tfcGraphTitles {
+    text-align: center;
+}
+
+.tfcChart-container {
+    text-align: center;
+}
+
+.chart-info {
+    font-size: 13px;
+    color: black;
+    text-align: justify;
 }

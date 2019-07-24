@@ -1,25 +1,26 @@
 Promise.all([
     d3.csv("data/populationStats.csv"),
-    d3.csv("data/TFC2.csv")
+    d3.csv("data/TFC.csv")
 ]).then(function(datafile) {
     makePopGraph(datafile[0]);
+    makeGNIGraph(datafile[0]);
     makeTFCGraphs(datafile[1]);
     makeTFCPieCharts(datafile[1]);
 });
 
 
 
-function makePopGraph(populationStats) {
-    var ndx = crossfilter(populationStats);
-    var year_dim = ndx.dimension(dc.pluck('Year'));
-    populationStats.forEach(function(d) {
+function makePopGraph(data) {
+    var ndx = crossfilter(data);
+
+    data.forEach(function(d) {
         d.Population = parseFloat(d.Population.replace(/,/g, ''));
         d.Year = parseInt(d.Year.replace(/,/g, ''), 10);
     });
 
 
     var year_dim = ndx.dimension(dc.pluck('Year'));
-    /*var population = year_dim.groupAll()('Population');*/
+
     var population = year_dim.group().reduceSum(dc.pluck('Population'));
 
 
@@ -34,8 +35,8 @@ function makePopGraph(populationStats) {
     var chart = dc.lineChart("#population-chart")
 
     chart
-        .width(600)
-        .height(400)
+        .width(null)
+        .height(null)
         .margins({ top: 10, right: 50, bottom: 30, left: 50 })
         .dimension(year_dim)
         .group(population)
@@ -43,6 +44,61 @@ function makePopGraph(populationStats) {
         .y(d3.scaleLinear().domain([2000, maxPop]))
         .x(d3.scaleLinear().domain([1990, maxDate]))
         .yAxisLabel("'000 People")
+        .xAxisLabel("Year")
+        .brushOn(false)
+        .renderDataPoints({ radius: 2, fillOpacity: 0.8, strokeOpacity: 0.0 });
+
+    chart.xAxis().tickFormat(d3.format('d'));
+
+    dc.renderAll();
+}
+
+function makeGNIGraph(data) {
+    var ndx = crossfilter(data);
+
+    data.forEach(function(d) {
+        isNaN(parseFloat(d.GNI))? d.GNI='': d.GNI = parseFloat(d.GNI).toFixed(2);
+    });
+
+
+    var year_dim = ndx.dimension(dc.pluck('Year'));
+    
+    //revisit issue with final data point
+    
+/*    year_dim.filter(function(d){
+       if(d<2018) {
+           var year = d;
+       }else {
+           d=undefined;
+       }
+     return year;
+    });*/
+    
+/*    console.log(year_dim.group());*/
+
+    var gni_group = year_dim.group().reduceSum(dc.pluck('GNI'));
+
+
+    var minDate = year_dim.bottom(1)[0].Year;
+    var maxDate = year_dim.top(1)[0].Year;
+
+    var gni_dim = ndx.dimension(dc.pluck('GNI'));
+
+    var minGNI = gni_dim.bottom(1)[0].GNI;
+    var maxGNI = gni_dim.top(1)[0].GNI;
+
+    var chart = dc.lineChart("#gni-chart")
+
+    chart
+        .width(null)
+        .height(null)
+        .margins({ top: 10, right: 50, bottom: 30, left: 50 })
+        .dimension(year_dim)
+        .group(gni_group)
+        .transitionDuration(500)
+        .y(d3.scaleLinear().domain([minGNI, maxGNI]))
+        .x(d3.scaleLinear().domain([1990, 2017]))
+        .yAxisLabel("USD/Capita")
         .xAxisLabel("Year")
         .brushOn(false)
         .renderDataPoints({ radius: 2, fillOpacity: 0.8, strokeOpacity: 0.0 });
@@ -91,7 +147,7 @@ function makeTFCGraphs(data) {
 function sector_selector(ndx) {
     var dim = ndx.dimension(function(d) { return d.Sector });
     var group = dim.group();
-    var select = dc.selectMenu("#sector-selector")
+    var select = dc.selectMenu("#sector_selector")
         .dimension(dim)
         .group(group);
 
@@ -129,15 +185,16 @@ function makeTFCSectorGraphs(ndx) {
         };
     }
 
-    var chart = dc.lineChart("#test");
+    var chart = dc.lineChart("#TFCbySector_area");
 
     chart
         .width(600)
-        .height(480)
+        .height(500)
         .x(d3.scaleLinear().domain([minDate, maxDate+1]))
         .margins({ left: 50, top: 10, right: 10, bottom: 20 })
         .renderTitle(true)
         .renderArea(true)
+        .transitionDuration(500)
         .brushOn(false)
         .title(function(d) {
             var sectors = ["Agri & Fisheries", "Services", "Industry", "Residential", "Transport"];
@@ -193,14 +250,23 @@ function makeTFCSectorGraphs(ndx) {
       
     //render barchart
       
-    var barChart = dc.barChart("#test2");
+    var barChart = dc.barChart("#TFCbySector_bar");
+    
+    /*var anchorHeight = $(".tfcChart").height();
+    console.log(anchorHeight);
+    var anchorWidth = $(".tfcChart").width();*/
+
+    /*var getHeight = function(anchor) {
+        return anchor.height();
+    };*/
 
     barChart
-        .width(400)
-        .height(480)
+        .width(600)
+        .height(500)
         .x(d3.scaleLinear().domain([2008, maxDate+1]))
         .margins({ left: 50, top: 10, right: 10, bottom: 20 })
         .renderTitle(true)
+        .transitionDuration(500)
         .brushOn(false)
         .title(function(d) {
             var sectors = ["Agri & Fisheries", "Services", "Industry", "Residential", "Transport"];
@@ -252,14 +318,17 @@ function makeTFCFuelTypeGraphs(ndx) {
         };
     }
     
-    var chart = dc.lineChart("#test1");
+    //render area chart
+    
+    var chart = dc.lineChart("#TFCbyFuel_area");
 
     chart
         .width(600)
-        .height(480)
+        .height(500)
         .x(d3.scaleLinear().domain([minDate, maxDate+1]))
         .margins({ left: 50, top: 10, right: 10, bottom: 20 })
         .renderTitle(true)
+        .transitionDuration(500)
         .title(function(d) {
             var fuels = ["Oil", "Natural Gas", "Electricity", "Renewable", "Peat", "Coal", "Non-Renewable Waste"];
             return fuels[this.layer - 1] + ': ' + d.value[this.layer].toFixed(2);
@@ -298,18 +367,19 @@ function makeTFCFuelTypeGraphs(ndx) {
     
     //render barchart
       
-    var barchart = dc.barChart("#test3");
+    var barchart = dc.barChart("#TFCbyFuel_bar");
 
     barchart
-        .width(400)
-        .height(480)
+        .width(600)
+        .height(500)
         .x(d3.scaleLinear().domain([2008, maxDate+1]))
         .margins({ left: 50, top: 10, right: 10, bottom: 20 })
         .renderTitle(true)
+        .transitionDuration(500)
         .brushOn(false)
         .title(function(d) {
-            var sectors = ["Agri & Fisheries", "Services", "Industry", "Residential", "Transport"];
-            return sectors[this.layer - 1] + ': ' + d.value[this.layer].toFixed(2);
+            var fuels = ["Oil", "Natural Gas", "Electricity", "Renewable", "Peat", "Coal", "Non-Renewable Waste"];
+            return fuels[this.layer - 1] + ': ' + d.value[this.layer].toFixed(2);
         })
         .clipPadding(10)
         .yAxisLabel("This is the Y Axis!")
@@ -340,8 +410,8 @@ function makeTFCPieCharts(data) {
     //Render Pie Chart
     
     var ndx = crossfilter(data);
-    var pieChart1 = dc.pieChart("#test4");
-    var pieChart2 = dc.pieChart("#test5");
+    var pieChart1 = dc.pieChart("#TFCbySector_pie");
+    var pieChart2 = dc.pieChart("#TFCbyFuel_pie");
     
     var year_dim = ndx.dimension(dc.pluck('Year'));
 
@@ -359,11 +429,12 @@ function makeTFCPieCharts(data) {
    
     
     pieChart1
-      .width(768)
-      .height(480)
+      .width(null)
+      .height(400)
       .innerRadius(100)
       .dimension(sector_dim)
       .group(sectorSumGroup)
+      .transitionDuration(500)
       .legend(dc.legend())
       // workaround for #703: not enough data is accessible through .label() to display percentages
       .on('pretransition', function(pieChart1) {
@@ -375,11 +446,12 @@ function makeTFCPieCharts(data) {
       pieChart1.ordinalColors(['#1f78b4', '#b2df8a', '#cab2d6']);
     
     pieChart2
-        .width(768)
-        .height(480)
+        .width(null)
+        .height(400)
         .innerRadius(100)
         .dimension(fuel_dim)
         .group(fuelSumGroup)
+        .transitionDuration(500)
         .legend(dc.legend())
         // workaround for #703: not enough data is accessible through .label() to display percentages
         .on('pretransition', function(pieChart1) {
