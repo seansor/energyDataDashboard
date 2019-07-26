@@ -6,46 +6,42 @@ nav .fas {
     padding-right: 10px;
 }
 
+.list-inline {
+    padding: 0;
+    list-style: none;
+}
+
+.list-inline li {
+    padding: 0;
+    margin:0;
+}
+
+
+.list-inline-item:not(:last-child) {
+    margin-right: 0.0rem;
+}
 
 /*.keyStats {
     margin-bottom
 }
 */
+
 .keyStats .fas {
     padding-right: 10px;
 }
 
-/*edits required to make graphs responsive*/
-
-/*.tfcChart-container {
-    height: 600px;
-    width: 80%;
-    transition: all 2s ease-in-out;
-}*/
-
-/*.pieChart {
-    height: 400px;
-    width: 80%;
-    transition: all 2s ease-in-out;
-}*/
-
-/*.tfcChart {
-    height: 100%;
-    width: 100%;
-}
-*/
-.tfcChartHidden{
-    transition: all 2s ease-in-out;
-    display: none;
-}
 
 .section-heading {
     text-align: center;
     background-color: #f5f5f5;
-    color:#39827d;
     margin-bottom: 0;
     padding-bottom: 25px;
     padding-top: 25px;
+}
+
+.section-heading h1 {
+    margin: 0 auto;
+    color: #39827d;
 }
 
 .keyStats {
@@ -53,7 +49,8 @@ nav .fas {
     background-color: #39827d;
 }
 
-.keyStats, .keyStats h1 {
+.keyStats,
+.keyStats h1 {
     color: white;
 }
 
@@ -67,24 +64,27 @@ hr {
     height: 1px;
 }
 
-.gni-chart {
+.gni-chart-container {
     height: 400px;
     /*width: 600px;*/
 }
 
 #gni-chart {
+    padding-left: 2%;
     height: 100%;
-    width: 100%;
+    width: 90%;
 }
 
-.population-chart {
+.pop_gni-chart-container {
+    border: solid 1px;
     height: 400px;
     /*width: 600px;*/
 }
 
 #population-chart {
+    padding-left: 2%;
     height: 100%;
-    width: 100%;
+    width: 90%;
 }
 
 .graph-heading {
@@ -92,6 +92,10 @@ hr {
 }
 
 .chartHidden {
+    display: none;
+}
+
+.selectHidden {
     display: none;
 }
 
@@ -109,7 +113,26 @@ hr {
 }
 
 .tfcChart-container {
+    border: solid 1px;
     text-align: center;
+    height:550px;
+}
+
+.tfcChart-container h4 {
+    padding-top: 10px;
+}
+
+.pieChart h4 {
+    padding-bottom: 20px;
+}
+
+.pieChart{
+    height:500px;
+}
+
+.tfcChart {
+    height: 90%;
+    width: 100%;
 }
 
 .chart-info {
@@ -117,3 +140,32 @@ hr {
     color: black;
     text-align: justify;
 }
+
+.chart-info p,
+.chart-info span {
+    display:none;
+}
+
+.chart-info span {
+    padding-left: 25px;
+    cursor: pointer;
+}
+
+.year_selector {
+    padding-top: 25px;
+}
+
+.scrolling-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: center;
+}
+
+.ghg-info span {
+    display: none;
+}
+
+/*.chart {
+    flex: 0 0 auto;
+}*/

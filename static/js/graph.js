@@ -1,11 +1,14 @@
 Promise.all([
     d3.csv("data/populationStats.csv"),
-    d3.csv("data/TFC.csv")
+    d3.csv("data/TFC.csv"),
+    d3.csv("data/ghg.csv")
 ]).then(function(datafile) {
     makePopGraph(datafile[0]);
     makeGNIGraph(datafile[0]);
     makeTFCGraphs(datafile[1]);
     makeTFCPieCharts(datafile[1]);
+    makeghgGraphs(datafile[2]);
+    makeghgPieCharts(datafile[2]);
 });
 
 
@@ -37,6 +40,7 @@ function makePopGraph(data) {
     chart
         .width(null)
         .height(null)
+        .minWidth(600)
         .margins({ top: 10, right: 50, bottom: 30, left: 50 })
         .dimension(year_dim)
         .group(population)
@@ -53,28 +57,29 @@ function makePopGraph(data) {
     dc.renderAll();
 }
 
+
 function makeGNIGraph(data) {
     var ndx = crossfilter(data);
 
     data.forEach(function(d) {
-        isNaN(parseFloat(d.GNI))? d.GNI='': d.GNI = parseFloat(d.GNI).toFixed(2);
+        isNaN(parseFloat(d.GNI)) ? d.GNI = '' : d.GNI = parseFloat(d.GNI).toFixed(2);
     });
 
 
     var year_dim = ndx.dimension(dc.pluck('Year'));
-    
+
     //revisit issue with final data point
-    
-/*    year_dim.filter(function(d){
-       if(d<2018) {
-           var year = d;
-       }else {
-           d=undefined;
-       }
-     return year;
-    });*/
-    
-/*    console.log(year_dim.group());*/
+
+    /*    year_dim.filter(function(d){
+           if(d<2018) {
+               var year = d;
+           }else {
+               d=undefined;
+           }
+         return year;
+        });*/
+
+    /*    console.log(year_dim.group());*/
 
     var gni_group = year_dim.group().reduceSum(dc.pluck('GNI'));
 
@@ -92,6 +97,7 @@ function makeGNIGraph(data) {
     chart
         .width(null)
         .height(null)
+        .minWidth(600)
         .margins({ top: 10, right: 50, bottom: 30, left: 50 })
         .dimension(year_dim)
         .group(gni_group)
@@ -115,7 +121,8 @@ function makeTFCGraphs(data) {
 
         d.Year = parseInt(d.Year, 10);
 
-        d.ktoe = parseInt(d.ktoe.replace(/,/g, ''),10);
+        d.ktoe = +(parseFloat(d.ktoe.replace(/,/g, '')).toFixed(2));
+        
 
         d.Sector == "Transport" ? d.sectorNum = 5 :
             d.Sector == "Residential" ? d.sectorNum = 4 :
@@ -135,12 +142,62 @@ function makeTFCGraphs(data) {
 
     var ndx = crossfilter(data);
     sector_selector(ndx);
+    fuel_selector(ndx);
     makeTFCSectorGraphs(ndx);
     makeTFCFuelTypeGraphs(ndx);
+    
 
+    /*        function hideGraphs() {
+            $(".tfcChartHidden").hide();
+        }
+
+        function renderAndHide (callback) {
+            dc.renderAll();
+            callback();   
+        }
+        
+        renderAndHide(hideGraphs);
+    }*/
 
     dc.renderAll();
 }
+
+function makeghgGraphs(data) {
+
+    data.forEach(function(d) {
+
+        d.Year = parseInt(d.Year, 10);
+
+        d.Emissions = parseInt(d.Emissions, 10);
+        
+
+        d.Sector == "Agriculture" ? d.sectorNum = 4 :
+            d.Sector == "Energy related Non-ETS" ? d.sectorNum = 3 :
+            d.Sector == "Other non-ETS" ? d.sectorNum = 2 :
+            d.sectorNum = 1;
+
+    });
+
+
+    var ndx = crossfilter(data);
+    makeghgSectorGraphs(ndx);
+    
+
+       /*     function hideGraphs() {
+            $(".tfcChartHidden").hide();
+        }
+
+        function renderAndHide (callback) {
+            dc.renderAll();
+            callback();   
+        }
+        
+        renderAndHide(hideGraphs);
+    }*/
+
+    dc.renderAll();
+}
+
 
 //Sector select Menu
 
@@ -156,11 +213,25 @@ function sector_selector(ndx) {
     });
 }
 
+//Fuel select Menu
+
+function fuel_selector(ndx) {
+    var dim = ndx.dimension(function(d) { return d.Fuel });
+    var group = dim.group();
+    var select = dc.selectMenu("#fuel_selector")
+        .dimension(dim)
+        .group(group);
+
+    select.title(function(d) {
+        return d.key;
+    });
+}
+
 
 //Total Final Consumption (TFC)/Total Final Energy Graphs
 
 function makeTFCSectorGraphs(ndx) {
-    
+
     var year_dim = ndx.dimension(dc.pluck('Year'));
 
     var minDate = year_dim.bottom(1)[0].Year;
@@ -187,13 +258,17 @@ function makeTFCSectorGraphs(ndx) {
 
     var chart = dc.lineChart("#TFCbySector_area");
 
+    var colorsArrayDark = ['#3969b1', '#da7c30', '#3e9651', '#cc2529', '#535154', '#6b4c9a', '#922428', '#948b3d'];
+
     chart
-        .width(600)
-        .height(500)
-        .x(d3.scaleLinear().domain([minDate, maxDate+1]))
-        .margins({ left: 50, top: 10, right: 10, bottom: 20 })
+        .width(null)
+        .height(450)
+        .minWidth(600)
+        .x(d3.scaleLinear().domain([minDate, maxDate + 1]))
+        .margins({ left: 50, top: 10, right: 10, bottom: 30 })
         .renderTitle(true)
         .renderArea(true)
+        .ordinalColors(colorsArrayDark)
         .transitionDuration(500)
         .brushOn(false)
         .title(function(d) {
@@ -201,12 +276,13 @@ function makeTFCSectorGraphs(ndx) {
             return sectors[this.layer - 1] + ': ' + d.value[this.layer].toFixed(2);
         })
         .clipPadding(10)
-        .yAxisLabel("This is the Y Axis!")
+        .yAxisLabel("ktoe", 20)
+        .xAxisLabel("Year")
         .dimension(year_dim)
         .group(filtered_group, '1', sel_stack('1'));
 
     chart.xAxis().tickFormat(d3.format('d'));
-    
+
     chart.legend(dc.legend().x(75).y(10).itemHeight(13).gap(5)
         .legendText(function(d) {
             var sectors = ["Agri & Fisheries", "Services", "Industry", "Residential", "Transport"];
@@ -227,45 +303,52 @@ function makeTFCSectorGraphs(ndx) {
             return l.reverse();
         });
     });
-    
+
     //loop to stack each sector
 
     for (var i = 2; i < 6; i++) {
         chart.stack(filtered_group, '' + i, sel_stack(i));
     }
-    
-    //Need to revisit this to remove 0 value bins
-    
-    function remove_competely_empty_bins(sourceGroup) {
-          return {
-              all:function () {
-                  return sourceGroup.all().filter(function(d) {
-                     for(i=0; i<5; i++){
-                     return Object.values(d.value).some(v => v!=0);
-                     }
-                  });
-              }
-          };
-      }
-      
-    //render barchart
-      
-    var barChart = dc.barChart("#TFCbySector_bar");
-    
-    /*var anchorHeight = $(".tfcChart").height();
-    console.log(anchorHeight);
-    var anchorWidth = $(".tfcChart").width();*/
 
-    /*var getHeight = function(anchor) {
+    //Need to revisit this to remove 0 value bins
+
+    function remove_competely_empty_bins(sourceGroup) {
+        return {
+            all: function() {
+                return sourceGroup.all().filter(function(d) {
+                    for (i = 0; i < 5; i++) {
+                        return Object.values(d.value).some(v => v != 0);
+                    }
+                });
+            }
+        };
+    }
+
+    //render barchart
+
+    var barChart = dc.barChart("#TFCbySector_bar");
+    var colorsArrayLight = ['#7294cb', '#e1974c', '#84ba5b', '#d35e60', '#808585', '#9067a7', '#ab6857', '#ccc210'];
+
+
+
+
+    /*var anchorHeight = $(".tfcChart-container1").height();
+    console.log(anchorHeight);
+    var anchorWidth = $(".tfcChart").width();
+
+    var getHeight = function(anchor) {
         return anchor.height();
     };*/
 
+
     barChart
-        .width(600)
-        .height(500)
-        .x(d3.scaleLinear().domain([2008, maxDate+1]))
-        .margins({ left: 50, top: 10, right: 10, bottom: 20 })
+        .height(450)
+        .width(null)
+        .minWidth(600)
+        .x(d3.scaleLinear().domain([2008, maxDate + 1]))
+        .margins({ left: 50, top: 100, right: 10, bottom: 30 })
         .renderTitle(true)
+        .ordinalColors(colorsArrayLight)
         .transitionDuration(500)
         .brushOn(false)
         .title(function(d) {
@@ -273,26 +356,30 @@ function makeTFCSectorGraphs(ndx) {
             return sectors[this.layer - 1] + ': ' + d.value[this.layer].toFixed(2);
         })
         .clipPadding(10)
-        .yAxisLabel("This is the Y Axis!")
+        .yAxisLabel("ktoe")
+        .xAxisLabel("Year")
         .dimension(year_dim)
         .group(filtered_group, '1', sel_stack('1'));
 
+    barChart.xAxis().tickFormat(d3.format('d'));
 
-    barChart.legend(dc.legend().x(75).y(10).itemHeight(13).gap(5)
+    barChart.legend(dc.legend().x(500).y(0).itemHeight(13).gap(5)
         .legendText(function(d) {
             var sectors = ["Agri & Fisheries", "Services", "Industry", "Residential", "Transport"];
             return (sectors[d.name - 1]);
         }));
-        
-        dc.override(barChart, 'legendables', function() {
-              var items = barChart._legendables();
-              return items.reverse();
-          });
-        
+
+    dc.override(barChart, 'legendables', function() {
+        var items = barChart._legendables();
+        return items.reverse();
+    });
+
     for (var i = 2; i < 6; i++) {
         barChart.stack(filtered_group, '' + i, sel_stack(i));
     }
-    
+
+
+
 }
 
 function makeTFCFuelTypeGraphs(ndx) {
@@ -317,15 +404,18 @@ function makeTFCFuelTypeGraphs(ndx) {
             return d.value[i];
         };
     }
-    
+
     //render area chart
-    
+
     var chart = dc.lineChart("#TFCbyFuel_area");
 
+    var colorsArrayDark = ['#3969b1', '#da7c30', '#3e9651', '#cc2529', '#535154', '#6b4c9a', '#922428', '#948b3d'];
+
     chart
-        .width(600)
-        .height(500)
-        .x(d3.scaleLinear().domain([minDate, maxDate+1]))
+        .width(null)
+        .height(450)
+        .minWidth(600)
+        .x(d3.scaleLinear().domain([minDate, maxDate + 1]))
         .margins({ left: 50, top: 10, right: 10, bottom: 20 })
         .renderTitle(true)
         .transitionDuration(500)
@@ -334,9 +424,11 @@ function makeTFCFuelTypeGraphs(ndx) {
             return fuels[this.layer - 1] + ': ' + d.value[this.layer].toFixed(2);
         })
         .renderArea(true)
+        .ordinalColors(colorsArrayDark)
         .brushOn(false)
         .clipPadding(10)
-        .yAxisLabel("This is the Y Axis!")
+        .yAxisLabel("ktoe")
+        .xAxisLabel("Year")
         .dimension(year_dim)
         .group(energySumGroup, '1', sel_stack('1'));
 
@@ -364,17 +456,20 @@ function makeTFCFuelTypeGraphs(ndx) {
     for (var i = 2; i < 8; i++) {
         chart.stack(energySumGroup, '' + i, sel_stack(i));
     }
-    
-    //render barchart
-      
-    var barchart = dc.barChart("#TFCbyFuel_bar");
 
-    barchart
-        .width(600)
-        .height(500)
-        .x(d3.scaleLinear().domain([2008, maxDate+1]))
-        .margins({ left: 50, top: 10, right: 10, bottom: 20 })
+    //render barchart
+
+    var barChart = dc.barChart("#TFCbyFuel_bar");
+    var colorsArrayLight = ['#7294cb', '#e1974c', '#84ba5b', '#d35e60', '#808585', '#9067a7', '#ab6857', '#ccc210'];
+
+    barChart
+        .width(null)
+        .height(450)
+        .minWidth(600)
+        .x(d3.scaleLinear().domain([2008, maxDate + 1]))
+        .margins({ left: 50, top: 100, right: 10, bottom: 20 })
         .renderTitle(true)
+        .ordinalColors(colorsArrayLight)
         .transitionDuration(500)
         .brushOn(false)
         .title(function(d) {
@@ -382,87 +477,296 @@ function makeTFCFuelTypeGraphs(ndx) {
             return fuels[this.layer - 1] + ': ' + d.value[this.layer].toFixed(2);
         })
         .clipPadding(10)
-        .yAxisLabel("This is the Y Axis!")
+        .yAxisLabel("ktoe")
+        .xAxisLabel("Year")
         .dimension(year_dim)
         .group(energySumGroup, '1', sel_stack('1'));
 
+    barChart.xAxis().tickFormat(d3.format('d'));
 
-    barchart.legend(dc.legend().x(75).y(10).itemHeight(13).gap(5)
+    barChart.legend(dc.legend().x(450).y(0).itemHeight(13).gap(5)
         .legendText(function(d) {
             var fuels = ["Oil", "Natural Gas", "Electricity", "Renewable", "Peat", "Coal", "Non-Renewable Waste"];
             return (fuels[d.name - 1]);
         }));
-        
-        dc.override(barchart, 'legendables', function() {
-              var items = barchart._legendables();
-              return items.reverse();
-          });
-        
+
+    dc.override(barChart, 'legendables', function() {
+        var items = barChart._legendables();
+        return items.reverse();
+    });
+
     for (var i = 2; i < 8; i++) {
-        barchart.stack(energySumGroup, '' + i, sel_stack(i));
+        barChart.stack(energySumGroup, '' + i, sel_stack(i));
     }
-    
+
 
 }
 
 function makeTFCPieCharts(data) {
 
     //Render Pie Chart
-    
+
     var ndx = crossfilter(data);
     var pieChart1 = dc.pieChart("#TFCbySector_pie");
     var pieChart2 = dc.pieChart("#TFCbyFuel_pie");
-    
+
     var year_dim = ndx.dimension(dc.pluck('Year'));
 
-    
+
     year_dim.filter(function(d) {
         return d === 2017;
     });
-    
+
     var sector_dim = ndx.dimension(dc.pluck('Sector'));
     var fuel_dim = ndx.dimension(dc.pluck('Fuel'));
 
-    var sectorSumGroup = sector_dim.group().reduceSum(function(d) {return d.ktoe;});
-    var fuelSumGroup = fuel_dim.group().reduceSum(function(d) {return d.ktoe;});
+    var sectorSumGroup = sector_dim.group().reduceSum(function(d) { return d.ktoe; });
+    var fuelSumGroup = fuel_dim.group().reduceSum(function(d) { return d.ktoe; });
 
-   
-    
+    var colorsArrayLight = ['#7294cb', '#e1974c', '#84ba5b', '#d35e60', '#808585', '#9067a7', '#ab6857', '#ccc210'];
+
     pieChart1
-      .width(null)
-      .height(400)
-      .innerRadius(100)
-      .dimension(sector_dim)
-      .group(sectorSumGroup)
-      .transitionDuration(500)
-      .legend(dc.legend())
-      // workaround for #703: not enough data is accessible through .label() to display percentages
-      .on('pretransition', function(pieChart1) {
-          pieChart1.selectAll('text.pie-slice').text(function(d) {
-              return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';
-          });
-      });
-      
-      pieChart1.ordinalColors(['#1f78b4', '#b2df8a', '#cab2d6']);
-    
+        .width(null)
+        .height(400)
+        .innerRadius(100)
+        .dimension(sector_dim)
+        .group(sectorSumGroup)
+        .transitionDuration(500)
+        .ordinalColors(colorsArrayLight)
+        .legend(dc.legend().x(10).y(0).itemHeight(13).gap(5))
+        // workaround for #703: not enough data is accessible through .label() to display percentages
+        .on('pretransition', function(pieChart1) {
+            pieChart1.selectAll('text.pie-slice').text(function(d) {
+                return dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2 * Math.PI) * 100) + '%';
+            });
+        });
+
+
     pieChart2
         .width(null)
         .height(400)
         .innerRadius(100)
         .dimension(fuel_dim)
         .group(fuelSumGroup)
+        .title(function(d){
+            return d.key + ': ' + d.value.toFixed(2) + ' ktoe';
+        })
         .transitionDuration(500)
-        .legend(dc.legend())
+        .ordinalColors(colorsArrayLight)
+        .legend(dc.legend().x(10).y(0).itemHeight(13).gap(5))
         // workaround for #703: not enough data is accessible through .label() to display percentages
         .on('pretransition', function(pieChart1) {
             pieChart1.selectAll('text.pie-slice').text(function(d) {
-                return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';
+                if ((d.endAngle - d.startAngle) > (0.1 * Math.PI)) {
+                    return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2 * Math.PI) * 100) + '%';
+                }
+                else if((d.endAngle - d.startAngle) < (0.05 * Math.PI)){
+                    return '';
+                }else {
+                    return dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2 * Math.PI) * 100) + '%';
+                }
             });
         });
-        
-        pieChart2.ordinalColors(['#1f78b4', '#b2df8a', '#cab2d6']);
-        
-        
+
     dc.renderAll();
+
+}
+
+function makeghgPieCharts(data) {
+
+    //Render Pie Chart
+
+    var ndx = crossfilter(data);
+    var pieChart = dc.pieChart("#ghg_pie");
+    
+    /*data.forEach(function(d) {
+        d.Emissions = parseInt(d.Emissions, 10);
+        d.Year = parseInt(d.Year.replace(/,/g, ''), 10);
+    });*/
+
+    var year_dim = ndx.dimension(dc.pluck('Year'));
+
+    year_dim.filter(function(d) {
+        return d === 2017;
+    });
+
+    var sector_dim = ndx.dimension(dc.pluck('Sector'));
+
+
+    var sectorSumGroup = sector_dim.group().reduceSum(function(d) { return d.Emissions; });
+
+    var colorsArrayLight = ['#7294cb', '#e1974c', '#84ba5b', '#d35e60', '#808585', '#9067a7', '#ab6857', '#ccc210'];
+
+    pieChart
+        .width(null)
+        .height(400)
+        .innerRadius(100)
+        .dimension(sector_dim)
+        .group(sectorSumGroup)
+        .transitionDuration(500)
+        .ordinalColors(colorsArrayLight)
+        .legend(dc.legend().x(10).y(0).itemHeight(13).gap(5))
+        // workaround for #703: not enough data is accessible through .label() to display percentages
+        .on('pretransition', function(pieChart) {
+            pieChart.selectAll('text.pie-slice').text(function(d) {
+                return dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2 * Math.PI) * 100) + '%';
+            });
+        });
+
+
+
+    dc.renderAll();
+
+}
+
+function makeghgSectorGraphs(ndx) {
+
+    var year_dim = ndx.dimension(dc.pluck('Year'));
+
+    var minDate = year_dim.bottom(1)[0].Year;
+    var maxDate = year_dim.top(1)[0].Year;
+
+    var emissionsSumGroup = year_dim.group().reduce(function(p, v) {
+
+        p[v.sectorNum] = (p[v.sectorNum] || 0) + v.Emissions;
+        return p;
+    }, function(p, v) {
+        p[v.sectorNum] = (p[v.sectorNum] || 0) - v.Emissions;
+        return p;
+    }, function() {
+        return {};
+    });
+
+    var filtered_group = remove_competely_empty_bins(emissionsSumGroup); // fake groups to remove 0 value bins
+
+    function sel_stack(i) {
+        return function(d) {
+            return d.value[i];
+        };
+    }
+
+    var chart = dc.lineChart("#ghgbySector_area");
+
+    var colorsArrayDark = ['#3969b1', '#da7c30', '#3e9651', '#cc2529', '#535154', '#6b4c9a', '#922428', '#948b3d'];
+
+    chart
+        .width(null)
+        .height(450)
+        .minWidth(600)
+        .x(d3.scaleLinear().domain([minDate, maxDate + 1]))
+        .margins({ left: 50, top: 10, right: 10, bottom: 20 })
+        .renderTitle(true)
+        .renderArea(true)
+        .ordinalColors(colorsArrayDark)
+        .transitionDuration(500)
+        .brushOn(false)
+        .title(function(d) {
+            var sectors = ["Agriculture", "Energy related Non-ETS", "Other Non-ETS", "ETS"];
+            return sectors[this.layer - 1] + ': ' + d.value[this.layer];
+        })
+        .clipPadding(10)
+        .yAxisLabel("ktCO2")
+        .xAxisLabel("Year")
+        .dimension(year_dim)
+        .group(filtered_group, '1', sel_stack('1'));
+
+    chart.xAxis().tickFormat(d3.format('d'));
+
+    chart.legend(dc.legend().x(75).y(20).itemHeight(13).gap(5)
+        .legendText(function(d) {
+            var sectors = ["Agriculture", "Energy related Non-ETS", "Other Non-ETS", "ETS"];
+            return (sectors[d.name - 1]);
+        }));
+
+
+    //reverse order of legend to match order of chart
+    dc.override(chart, 'legendables', chart._legendables);
+
+    dc.override(chart, 'legendables', function() {
+        var legendables = this._legendables();
+        if (!this.dashStyle()) {
+            return legendables.reverse();
+        }
+        return legendables.map(function(l) {
+            l.dashstyle = this.dashStyle();
+            return l.reverse();
+        });
+    });
+
+    //loop to stack each sector
+
+    for (var i = 2; i < 5; i++) {
+        chart.stack(filtered_group, '' + i, sel_stack(i));
+    }
+
+    //Need to revisit this to remove 0 value bins
+
+    function remove_competely_empty_bins(sourceGroup) {
+        return {
+            all: function() {
+                return sourceGroup.all().filter(function(d) {
+                    for (i = 0; i < 4; i++) {
+                        return Object.values(d.value).some(v => v != 0);
+                    }
+                });
+            }
+        };
+    }
+
+    //render barchart
+
+    var barChart = dc.barChart("#ghgbySector_bar");
+    var colorsArrayLight = ['#7294cb', '#e1974c', '#84ba5b', '#d35e60', '#808585', '#9067a7', '#ab6857', '#ccc210'];
+
+
+
+
+    /*var anchorHeight = $(".tfcChart-container1").height();
+    console.log(anchorHeight);
+    var anchorWidth = $(".tfcChart").width();
+
+    var getHeight = function(anchor) {
+        return anchor.height();
+    };*/
+
+
+    barChart
+        .height(450)
+        .width(null)
+        .minWidth(600)
+        .x(d3.scaleLinear().domain([2008, maxDate + 1]))
+        .margins({ left: 50, top: 100, right: 10, bottom: 20 })
+        .renderTitle(true)
+        .ordinalColors(colorsArrayLight)
+        .transitionDuration(500)
+        .brushOn(false)
+        .title(function(d) {
+            var sectors = ["Agriculture", "Energy related Non-ETS", "Other Non-ETS", "ETS"];
+            return sectors[this.layer - 1] + ': ' + d.value[this.layer];
+        })
+        .clipPadding(10)
+        .yAxisLabel("ktCO2")
+        .xAxisLabel("Year")
+        .dimension(year_dim)
+        .group(filtered_group, '1', sel_stack('1'));
+
+    barChart.xAxis().tickFormat(d3.format('d'));
+
+    barChart.legend(dc.legend().x(20).y(0).itemHeight(13).gap(5)
+        .legendText(function(d) {
+            var sectors = ["Agriculture", "Energy related Non-ETS", "Other Non-ETS", "ETS"];
+            return (sectors[d.name - 1]);
+        }));
+
+    dc.override(barChart, 'legendables', function() {
+        var items = barChart._legendables();
+        return items.reverse();
+    });
+
+    for (var i = 2; i < 5; i++) {
+        barChart.stack(filtered_group, '' + i, sel_stack(i));
+    }
+
+
 
 }
