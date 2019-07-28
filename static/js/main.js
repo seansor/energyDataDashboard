@@ -7,6 +7,12 @@ $(document).ready(function() {
     $(".tfcChart-container").hide();
     $('.' + $(this).val()).show();
     
+    /*if ($(".scrolling-wrapper").height()>3){
+      $(".scrolling-wrapper").addClass("border");
+    } else {
+      $(".scrolling-wrapper").removeClass("border");
+    }*/
+    
     
 
   //show or hide select sector menu depending on year date range selected
@@ -36,18 +42,23 @@ $(document).ready(function() {
   });
   
   //show or hide additional ghg information
-  $('.ets span:first-child').show();
-  $('.ets span').click(function(){
-    $('.ets span:nth-of-type(2)').slideToggle();
-    $('.ets span:first').toggle();
-    $('.ets span:last').toggle();
+  $('.ets-info span:first').show();
+  $('.ets-info span').click(function(){
+    $('.ets-info p:last').slideToggle(function(){
+      $('.ets-info span:first').toggle();
+      $('.ets-info span:last').toggle();
+    });
   });
   
-  $('.nonEts span:first-child').show();
-  $('.nonEts span').click(function(){
-    $('nonEts span:nth-of-type(2)').slideToggle();
-    $('nonEts span:first').toggle();
-    $('nonEts span:last').toggle();
+  $('.nonEts-info span:first').show();
+  $('.nonEts-info span').click(function(){
+    $('.nonEts-info p:last').slideToggle(function(){
+      //don't change from more info to less info until slide toggle is complete
+        $('.nonEts-info span:first').toggle();
+        $('.nonEts-info span:last').toggle();
+    });
   });
+  
+  
   
 });

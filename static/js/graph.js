@@ -4,7 +4,10 @@ Promise.all([
     d3.csv("data/ghg.csv")
 ]).then(function(datafile) {
     makePopGraph(datafile[0]);
+    showCurrentPop(datafile[0]);
+    showGNIdata(datafile[0]);
     makeGNIGraph(datafile[0]);
+    showTFCdata(datafile[1]);
     makeTFCGraphs(datafile[1]);
     makeTFCPieCharts(datafile[1]);
     makeghgGraphs(datafile[2]);
@@ -39,7 +42,7 @@ function makePopGraph(data) {
 
     chart
         .width(null)
-        .height(null)
+        .height(400)
         .minWidth(600)
         .margins({ top: 10, right: 50, bottom: 30, left: 50 })
         .dimension(year_dim)
@@ -55,6 +58,91 @@ function makePopGraph(data) {
     chart.xAxis().tickFormat(d3.format('d'));
 
     dc.renderAll();
+}
+
+function showCurrentPop(data) {
+    var ndx = crossfilter(data);
+
+    var year_dim = ndx.dimension(dc.pluck('Year'));
+
+
+    year_dim.filter(function(d) {
+        return d === 2018;
+    });
+
+    var currentPop = ndx.groupAll().reduceSum(function(d) { return d.Population });
+
+    dc.numberDisplay("#currentPop")
+        .formatNumber(d3.format(".3s"))
+        .valueAccessor(function(d) {
+            return d * 1000;
+        })
+        .group(currentPop);
+
+    var popChange = ndx.groupAll().reduceSum(function(d) { return d.Population_change });
+
+    dc.numberDisplay("#popChange")
+        .formatNumber(d3.format(",d"))
+        .valueAccessor(function(d) {
+            return d * 1000;
+        })
+        .group(popChange);
+}
+
+function showGNIdata(data) {
+    var ndx = crossfilter(data);
+
+    var year_dim = ndx.dimension(dc.pluck('Year'));
+
+
+    year_dim.filter(function(d) {
+        return (d > 2015 && d < 2018);
+    });
+
+    var GNIincrease = ndx.groupAll().reduce(
+        function(p, v) {
+            p.count++;
+            if (p.count < 2) {
+                p.increase = 0;
+                p.prevGNI = v.GNI;
+            }
+            else {
+                p.increase = v.GNI / p.prevGNI;
+                p.prevGNI = v.GNI;
+            }
+            return p;
+        },
+
+        function(p, v) {
+            p.count--;
+            if (p.count < 2) {
+                p.increase = 0;
+                p.prevGNI = v.GNI;
+            }
+            else if (p.count == 0) {
+                p.increase = 0;
+                p.prevGNI = v.GNI;
+            }
+            else {
+                p.increase = v.GNI / p.prevGNI;
+                p.prevGNI = v.GNI;
+            }
+            return p;
+        },
+
+        function() {
+            return { count: 0, increase: 0, prevGNI: 0 };
+        }
+    );
+
+
+
+    dc.numberDisplay("#GNIincrease")
+        .formatNumber(d3.format(",.1%"))
+        .valueAccessor(function(d) {
+            return d.increase - 1;
+        })
+        .group(GNIincrease);
 }
 
 
@@ -96,7 +184,7 @@ function makeGNIGraph(data) {
 
     chart
         .width(null)
-        .height(null)
+        .height(400)
         .minWidth(600)
         .margins({ top: 10, right: 50, bottom: 30, left: 50 })
         .dimension(year_dim)
@@ -115,14 +203,188 @@ function makeGNIGraph(data) {
 }
 
 
-function makeTFCGraphs(data) {
+/*---------------------Need to resolve this function--------------------*/
+
+function showTFCdata(data) {
+    var ndx = crossfilter(data);
+
+    /*var year_dim = ndx.dimension(dc.pluck('Year'));*/
 
     data.forEach(function(d) {
 
         d.Year = parseInt(d.Year, 10);
 
         d.ktoe = +(parseFloat(d.ktoe.replace(/,/g, '')).toFixed(2));
+
+    });
+
+
+    var TFCincrease = ndx.groupAll().reduce(
+        function(p, v) {
+            if (v.Year == 2016) {
+                p.yearTotal_16 += v.ktoe;
+                p.count16++;
+                
+            }
+            else if (v.Year == 2017) {
+                p.yearTotal_17 += v.ktoe;
+                p.count17++;
+
+            }
+            
+            if (p.count16>0 && p.count17>0) {
+                p.increase = p.yearTotal_17/p.yearTotal_16;
+            }
+            return p;
+        },
+
+        function(p, v) {
+            if (v.Year == 2016) {
+                if(p.count16=0) {
+                    p.yearTotal_16 = 0;
+                    p.count16 = 0;
+                } else {
+                    p.yearTotal_16 -= v.ktoe;
+                    p.count16--;
+                }
+                
+            }
+            else if (v.Year == 2017) {
+                if(p.count17=0) {
+                    p.yearTotal_17 = 0;
+                    p.count17 = 0;
+                }else {
+                    p.yearTotal_17 -= v.ktoe;
+                    p.count17--;
+                }
+            }
+            
+            if (p.count16>0 && p.count17>0) {
+                p.increase = p.yearTotal_17/p.yearTotal_16;
+            }else{
+                p.increase = 0;
+            }
+            return p;
+        },
+
+        function() {
+            return { count16: 0, count17: 0, increase: 0, yearTotal_16: 0, yearTotal_17: 0 };
+        }
+    );
+
+
+    dc.numberDisplay("#TFCincrease")
+        .formatNumber(d3.format(",.1%"))
+        .group(TFCincrease)
+        .valueAccessor(function(d) {
+            
+            return d.increase-1;
+        });
         
+        
+        var transportPercentage = ndx.groupAll().reduce(
+        function(p, v) {
+            if (v.Year == 2017) {
+                p.total += v.ktoe;
+                if(v.Sector == "Transport"){
+                    p.transportTotal +=v.ktoe;
+                }
+                
+            }
+            
+            if (p.total>0){
+                p.transportRatio = p.transportTotal/p.total;
+            }
+            return p;
+        },
+
+        function(p, v) {
+            if (v.Year == 2017) {
+                p.total -= v.ktoe;
+                if(v.Sector == "Transport"){
+                    p.transportTotal -=v.ktoe;
+                }
+                
+            }
+            
+            if (p.total>0){
+                p.transportRatio = p.transportTotal/p.total;
+            }
+            return p;
+        },
+
+        function() {
+            return { total: 0, transportTotal: 0, transportRatio:0};
+        }
+    );
+
+
+    dc.numberDisplay("#transportRatio")
+        .formatNumber(d3.format(",.1%"))
+        .group(transportPercentage)
+        .valueAccessor(function(d) {
+            
+            return d.transportRatio;
+        });
+        
+        
+        var oilPercentage = ndx.groupAll().reduce(
+        function(p, v) {
+            if (v.Year == 2017) {
+                p.total += v.ktoe;
+                if(v.Fuel == "Oil"){
+                    p.oilTotal +=v.ktoe;
+                }
+                
+            }
+            
+            if (p.total>0){
+                p.oilRatio = p.oilTotal/p.total;
+            }
+            return p;
+        },
+
+        function(p, v) {
+            if (v.Year == 2017) {
+                p.total -= v.ktoe;
+                if(v.Sector == "oil"){
+                    p.oilTotal -=v.ktoe;
+                }
+                
+            }
+            
+            if (p.total>0){
+                p.oilRatio = p.oilTotal/p.total;
+            }
+            return p;
+        },
+
+        function() {
+            return { total: 0, oilTotal: 0, oilRatio:0};
+        }
+    );
+
+
+    dc.numberDisplay("#oilRatio")
+        .formatNumber(d3.format(",.1%"))
+        .group(oilPercentage)
+        .valueAccessor(function(d) {
+            
+            return d.oilRatio;
+        });
+}
+
+/*!---------------------Need to resolve this function--------------------*/
+
+
+function makeTFCGraphs(data) {
+
+    data.forEach(function(d) {
+
+        d.Year = parseInt(d.Year, 10);
+
+        /*d.ktoe = +(parseFloat(d.ktoe.replace(/,/g, '')).toFixed(2));*/
+
 
         d.Sector == "Transport" ? d.sectorNum = 5 :
             d.Sector == "Residential" ? d.sectorNum = 4 :
@@ -145,7 +407,7 @@ function makeTFCGraphs(data) {
     fuel_selector(ndx);
     makeTFCSectorGraphs(ndx);
     makeTFCFuelTypeGraphs(ndx);
-    
+
 
     /*        function hideGraphs() {
             $(".tfcChartHidden").hide();
@@ -169,7 +431,7 @@ function makeghgGraphs(data) {
         d.Year = parseInt(d.Year, 10);
 
         d.Emissions = parseInt(d.Emissions, 10);
-        
+
 
         d.Sector == "Agriculture" ? d.sectorNum = 4 :
             d.Sector == "Energy related Non-ETS" ? d.sectorNum = 3 :
@@ -181,9 +443,9 @@ function makeghgGraphs(data) {
 
     var ndx = crossfilter(data);
     makeghgSectorGraphs(ndx);
-    
 
-       /*     function hideGraphs() {
+
+    /*     function hideGraphs() {
             $(".tfcChartHidden").hide();
         }
 
@@ -356,7 +618,7 @@ function makeTFCSectorGraphs(ndx) {
             return sectors[this.layer - 1] + ': ' + d.value[this.layer].toFixed(2);
         })
         .clipPadding(10)
-        .yAxisLabel("ktoe")
+        .yAxisLabel("ktoe", 20)
         .xAxisLabel("Year")
         .dimension(year_dim)
         .group(filtered_group, '1', sel_stack('1'));
@@ -416,7 +678,7 @@ function makeTFCFuelTypeGraphs(ndx) {
         .height(450)
         .minWidth(600)
         .x(d3.scaleLinear().domain([minDate, maxDate + 1]))
-        .margins({ left: 50, top: 10, right: 10, bottom: 20 })
+        .margins({ left: 50, top: 10, right: 10, bottom: 30 })
         .renderTitle(true)
         .transitionDuration(500)
         .title(function(d) {
@@ -427,7 +689,7 @@ function makeTFCFuelTypeGraphs(ndx) {
         .ordinalColors(colorsArrayDark)
         .brushOn(false)
         .clipPadding(10)
-        .yAxisLabel("ktoe")
+        .yAxisLabel("ktoe", 20)
         .xAxisLabel("Year")
         .dimension(year_dim)
         .group(energySumGroup, '1', sel_stack('1'));
@@ -467,7 +729,7 @@ function makeTFCFuelTypeGraphs(ndx) {
         .height(450)
         .minWidth(600)
         .x(d3.scaleLinear().domain([2008, maxDate + 1]))
-        .margins({ left: 50, top: 100, right: 10, bottom: 20 })
+        .margins({ left: 50, top: 100, right: 10, bottom: 30 })
         .renderTitle(true)
         .ordinalColors(colorsArrayLight)
         .transitionDuration(500)
@@ -477,7 +739,7 @@ function makeTFCFuelTypeGraphs(ndx) {
             return fuels[this.layer - 1] + ': ' + d.value[this.layer].toFixed(2);
         })
         .clipPadding(10)
-        .yAxisLabel("ktoe")
+        .yAxisLabel("ktoe", 20)
         .xAxisLabel("Year")
         .dimension(year_dim)
         .group(energySumGroup, '1', sel_stack('1'));
@@ -540,7 +802,7 @@ function makeTFCPieCharts(data) {
                 return dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2 * Math.PI) * 100) + '%';
             });
         });
-
+        
 
     pieChart2
         .width(null)
@@ -548,26 +810,31 @@ function makeTFCPieCharts(data) {
         .innerRadius(100)
         .dimension(fuel_dim)
         .group(fuelSumGroup)
-        .title(function(d){
+        .title(function(d) {
             return d.key + ': ' + d.value.toFixed(2) + ' ktoe';
         })
         .transitionDuration(500)
         .ordinalColors(colorsArrayLight)
         .legend(dc.legend().x(10).y(0).itemHeight(13).gap(5))
+        
+        
+        
         // workaround for #703: not enough data is accessible through .label() to display percentages
         .on('pretransition', function(pieChart1) {
             pieChart1.selectAll('text.pie-slice').text(function(d) {
                 if ((d.endAngle - d.startAngle) > (0.1 * Math.PI)) {
                     return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2 * Math.PI) * 100) + '%';
                 }
-                else if((d.endAngle - d.startAngle) < (0.05 * Math.PI)){
+                else if ((d.endAngle - d.startAngle) < (0.05 * Math.PI)) {
                     return '';
-                }else {
+                }
+                else {
                     return dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2 * Math.PI) * 100) + '%';
                 }
             });
         });
-
+        
+    
     dc.renderAll();
 
 }
@@ -578,7 +845,7 @@ function makeghgPieCharts(data) {
 
     var ndx = crossfilter(data);
     var pieChart = dc.pieChart("#ghg_pie");
-    
+
     /*data.forEach(function(d) {
         d.Emissions = parseInt(d.Emissions, 10);
         d.Year = parseInt(d.Year.replace(/,/g, ''), 10);
@@ -654,7 +921,7 @@ function makeghgSectorGraphs(ndx) {
         .height(450)
         .minWidth(600)
         .x(d3.scaleLinear().domain([minDate, maxDate + 1]))
-        .margins({ left: 50, top: 10, right: 10, bottom: 20 })
+        .margins({ left: 50, top: 10, right: 10, bottom: 30 })
         .renderTitle(true)
         .renderArea(true)
         .ordinalColors(colorsArrayDark)
@@ -665,7 +932,7 @@ function makeghgSectorGraphs(ndx) {
             return sectors[this.layer - 1] + ': ' + d.value[this.layer];
         })
         .clipPadding(10)
-        .yAxisLabel("ktCO2")
+        .yAxisLabel("ktCO2", 20)
         .xAxisLabel("Year")
         .dimension(year_dim)
         .group(filtered_group, '1', sel_stack('1'));
@@ -735,7 +1002,7 @@ function makeghgSectorGraphs(ndx) {
         .width(null)
         .minWidth(600)
         .x(d3.scaleLinear().domain([2008, maxDate + 1]))
-        .margins({ left: 50, top: 100, right: 10, bottom: 20 })
+        .margins({ left: 50, top: 100, right: 10, bottom: 30 })
         .renderTitle(true)
         .ordinalColors(colorsArrayLight)
         .transitionDuration(500)
@@ -745,7 +1012,7 @@ function makeghgSectorGraphs(ndx) {
             return sectors[this.layer - 1] + ': ' + d.value[this.layer];
         })
         .clipPadding(10)
-        .yAxisLabel("ktCO2")
+        .yAxisLabel("ktCO2", 20)
         .xAxisLabel("Year")
         .dimension(year_dim)
         .group(filtered_group, '1', sel_stack('1'));

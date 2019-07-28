@@ -26,37 +26,33 @@
             <h1>Population and Economic Data</h1>
         </div>
         <div class="row keyStats">
-            <div class="col-md-4 col-lg-3">
-                <h1><i class="fas fa-users"></i> 4.86 million</h1>
+            <div class="col-md-4">
+                <h1><i class="fas fa-users"></i><span id="currentPop"></span></h1>
                 <p>Population estimate as of April 2018: the combined effect of natural increase and positive net migration.</p>
             </div>
-            <div class="d-none d-lg-inline-block col-lg-3">
-                <h1><i class="fas fa-users"></i> 64,500</h1>
+            <div class="col-md-4">
+                <h1><i class="fas fa-users"></i><span id="popChange"></span></h1>
                 <p>Population growth in the year to April 2018, the largest annual increase since 2008</p>
             </div>
-            <div class="col-md-4 col-lg-3">
-                <h1><i class="fas fa-search-dollar"></i>3%</h1>
+            <div class="col-md-4">
+                <h1><i class="fas fa-search-dollar"></i><span id="GNIincrease"></span></h1>
                 <p>
-                    Increase in Modified Gross National Income (GNI*) at current market prices from 2016-2017, rising from €175.8bn to €181.2bn.
+                    Increase in Gross National Income (GNI) at current market prices from 2016-2017, rising from €223.15bn to €234.22bn equivalent to 58,000 USD per capita to 61,230 USD per capita.
                 </p>
-            </div>
-            <div class="col-md-4 col-lg-3">
-                <h1><i class="fas fa-industry"></i>41%</h1>
-                <p>Contribution of Industry excluding construction to the growth (2016-2017). Information and communication contributed another 22.3%.</p>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row graphs">
             <div class="col-lg-6">
                 <h4 class="graph-heading">Population</h4>
-                <div class="scrolling-wrapper">
-                    <div class="pop_gni-chart-container">
+                <div class="scrolling-wrapper border">
+                    <div class="col pop_gni-chart-container">
                         <div id="population-chart"></div>
                     </div>
                 </div>
-                <div class="chart-info">
-                    <span>More Info</span>
-                    <span>Less Info</span>
+                <div class="chart-info chart-info--small">
+                    <span>More Info<i class="fas fa-arrow-down"></i></span>
+                    <span>Less Info<i class="fas fa-arrow-up"></i></span>
                     <p>
                         The number of immigrants to the State in the year to April 2018 is estimated to have increased by 6.7% from 84,600 to 90,300 while the number of emigrants declined over the same period, from 64,800 to 56,300 (-13.1%). These combined changes have resulted
                         in net inward migration for Ireland in 2018 of 34,000, the highest level of net inward migration since 2008. The combined effect of natural increase and positive net migration resulted in an overall increase in the population of
@@ -66,47 +62,49 @@
             </div>
             <div class="col-lg-6">
                 <h4 class="graph-heading">GNI</h4>
-                <div class="scrolling-wrapper">
-                    <div class="pop_gni-chart-container">
+                <div class="scrolling-wrapper border">
+                    <div class="col pop_gni-chart-container">
                         <div id="gni-chart"></div>
                     </div>
                 </div>
-                <div class="chart-info">
-                    <span>More Info</span>
-                    <span>Less Info</span>
+                <div class="chart-info chart-info--small">
+                    <span>More Info<i class="fas fa-arrow-down"></i></span>
+                    <span>Less Info<i class="fas fa-arrow-up"></i></span>
                     <p>
                         Energy use is usually linked to economic activity. A growing economy leads to more goods being produced, purchased, transported, and more disposable income for people spend on travel or on heating their homes. GDP is the most commonly used indicator for
-                        economic growth but in Ireland GDP can be disproportionatly affected by the accounting of large multinationals. An alternative measure of economic activity developed by the Central Statistics Office is modified GNI.
+                        economic growth but in Ireland GDP can be disproportionatly affected by the accounting of large multinationals. An alternative measure of economic activity developed by the Central Statistics Office is modified GNI. Due to lack
+                        of data on the modified GNI the standard GNI is shown above. There was a 3% increase in Modified Gross National Income (GNI*) at current market prices from 2016-2017, rising from €175.8bn to €181.2bn compared to a 5% increase in
+                        GNI
+
                     </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <hr>
-
-
     <section class="container-fluid energyStats">
-        <h1 class="section-heading">Energy Statistics</h1>
+        <div class=" row section-heading">
+            <h1>Energy Statistics</h1>
+        </div>
         <div class="row keyStats">
             <div class="col-md-4">
-                <h1><i class="fas fa-chart-line"></i>+0.5%</h1>
-                <p>Increase in overall energy use in 2017</p>
+                <h1><i class="fas fa-chart-line"></i><span id="TFCincrease"></span></h1>
+                <p>Increase in final energy use (Total Final Consumption [TFC]) in 2017</p>
             </div>
             <div class="col-md-4">
-                <h1><i class="fas fa-car"></i>42.9%</h1>
+                <h1><i class="fas fa-car"></i><span id="transportRatio"></span></h1>
                 <p>
                     Transports share of final energy use in 2017. Transport continues to dominate Ireland’s energy use and experienced a 2.0% increase in energy use in 2017.
                 </p>
             </div>
             <div class="col-md-4">
-                <h1><i class="fas fa-gas-pump"></i>57.5%</h1>
+                <h1><i class="fas fa-gas-pump"></i><span id="oilRatio"></span></h1>
                 <p>Oil's share of Final Energy Consumption in 2017. Oil continues to be the dominant energy source. It accounted for over 96% of TFC in transport in 2017.</p>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-md-3 year_selector">
+        <div class="row year_selector">
+            <div class="col-md-4">
                 <label for="year_selector">Select Years:</label>
                 <select id="year_selector">
                     <option value="pieChart">2017</option>
@@ -118,7 +116,7 @@
 
         <div class="row">
             <div class="col-lg-6">
-                <div class="tfcGraphTitles justify-content-center">
+                <div class="graphTitles justify-content-center">
                     <h2>Final Energy By Sector</h2>
                 </div>
                 <div class="selector-container selectHidden">
@@ -126,25 +124,36 @@
                         <label for="sector_selector">Select Sector:</label>
                     </div>
                 </div>
-                <div class="tfcChart-container pieChart">
-                    <h4>2017</h4>
-                    <div id="TFCbySector_pie" class="tfcChart"></div>
+                <div class="scrolling-wrapper border">
+                    <div class="col tfcChart-container pieChart">
+                        <h4>2017</h4>
+                        <div id="TFCbySector_pie" class="tfcChart"></div>
+                    </div>
                 </div>
-                <div class="scrolling-wrapper">
-                    <div class="tfcChart-container chartHidden barChart">
+                <div class="scrolling-wrapper border">
+                    <div class="col tfcChart-container chartHidden barChart">
                         <h4>2008-2017</h4>
                         <div id="TFCbySector_bar" class="tfcChart"></div>
                     </div>
                 </div>
-                <div class="scrolling-wrapper">
-                    <div class="tfcChart-container chartHidden areaChart">
+                <div class="scrolling-wrapper border">
+                    <div class="col tfcChart-container chartHidden areaChart">
                         <h4>1990-2017</h4>
                         <div id="TFCbySector_area" class="tfcChart"></div>
                     </div>
                 </div>
+                <div class="chart-info chart-info--small">
+                    <span>More Info<i class="fas fa-arrow-down"></i></span>
+                    <span>Less Info<i class="fas fa-arrow-up"></i></span>
+                    <p>
+                        Looking at final energy spit by sector, transport has by far the largest share, accounting for 43% of final energy demand in 2017. Transport has been the sector that is most sensitive to the economy. Transport energy demand experienced the greatest reduction
+                        after the 2009 recession and has seen the greatest increase since 2012.<br> The next largest sources of energy demand are households and industry. They accounted for 21% and 22% of final energy use respectively
+                        in 2017.
+                    </p>
+                </div>
             </div>
             <div class="col-lg-6">
-                <div class="tfcGraphTitles">
+                <div class="graphTitles">
                     <h2>Final Energy By Fuel</h2>
                 </div>
                 <div class="selector-container selectHidden">
@@ -152,30 +161,42 @@
                         <label for="fuel_selector">Select Fuel:</label>
                     </div>
                 </div>
-                <div class="tfcChart-container pieChart">
-                    <h4>2017</h4>
-                    <div id="TFCbyFuel_pie" class="tfcChart"></div>
+                <div class="scrolling-wrapper border">
+                    <div class="col tfcChart-container pieChart">
+                        <h4>2017</h4>
+                        <div id="TFCbyFuel_pie" class="tfcChart"></div>
+                    </div>
                 </div>
-                <div class="scrolling-wrapper">
-                    <div class="tfcChart-container chartHidden barChart">
+                <div class="scrolling-wrapper border">
+                    <div class="col tfcChart-container chartHidden barChart">
                         <h4>2008-2017</h4>
                         <div id="TFCbyFuel_bar" class="tfcChart"></div>
                     </div>
                 </div>
-                <div class="scrolling-wrapper">
-                    <div class="tfcChart-container chartHidden areaChart">
+                <div class="scrolling-wrapper border">
+                    <div class="col tfcChart-container chartHidden areaChart">
                         <h4>1990-2017</h4>
                         <div id="TFCbyFuel_area" class="tfcChart"></div>
                     </div>
+                </div>
+                <div class="chart-info chart-info--small">
+                    <span>More Info<i class="fas fa-arrow-down"></i></span>
+                    <span>Less Info<i class="fas fa-arrow-up"></i></span>
+                    <p>
+                        Final Energy Consumption peaked in 2008 and declined between 2008 and 2014, due to the recession. Following the recovery in the economy, primary energy returned to growth in 2015 and 2016 but remained flat in 2017.<br> Oil continues
+                        to be the dominant energy source and the dominant fuel of Total Final Consumption (TFC). It made up 57.5% of TFC in 2017. Final consumption of oil increased by 0.9% in 2017 (0.5% increase in primary consumption). 2017 was a milder
+                        year than 2016 which resulted in lower oil use in the residential and commercial sectors. Oil is mostly used for transport, followed by heating.<br> Electricity is the next largest energy source comsumed at 19% of TFC. Most of
+                        this electricity is generated by natural gas. (Natural gas accounted for 51% of energy inputs to electricity generation in 2017. This is accoutned for under primary energy as opposed final consumption shown in the graphs above.)<br>                        Total renewable energy increased by 19% during 2017. Hydro and wind increased by 1.6% and 21% respectively. Biomass use also increased by 13.2%. Renewable energy accounted for 9.3% of primary energy in 2017, up from 7.9% in 2016.
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <hr>
-
     <section class="container-fluid carbonStats">
-        <h1 class="section-heading">Greenhouse Gas Emissions</h1>
+        <div class=" row section-heading">
+            <h1>Greenhouse Gas Emissions</h1>
+        </div>
         <div class="row keyStats">
             <div class="col-md-4">
                 <h1><i class="fas fa-chart-line"></i>32%</h1>
@@ -193,8 +214,8 @@
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-md-3">
+        <div class="row year_selector">
+            <div class="col-md-4">
                 <label for="ghg-year_selector">Select Years:</label>
                 <select id="ghg-year_selector">
                     <option value="ghgPieChart">2017</option>
@@ -205,53 +226,54 @@
         </div>
 
         <div class="row">
-            <div class="col-lg-6 tfcGraphTitles justify-content-center">
+            <div class="col-lg-6 graphTitles justify-content-center">
                 <h2>Greenhouse Gas Emissions</h2>
-                <div class="ghgChart-container ghgPieChart">
-                    <h4>2017</h4>
-                    <div id="ghg_pie" class="ghgChart"></div>
+                <div class="scrolling-wrapper border">
+                    <div class="col ghgChart-container ghgPieChart">
+                        <h4>2017</h4>
+                        <div id="ghg_pie" class="ghgChart"></div>
+                    </div>
                 </div>
-                <div class="ghgChart-container chartHidden ghgBarChart">
-                    <h4>2008-2017</h4>
-                    <div id="ghgbySector_bar" class="ghgChart"></div>
+                <div class="scrolling-wrapper border">
+                    <div class="ghgChart-container chartHidden ghgBarChart">
+                        <h4>2008-2017</h4>
+                        <div id="ghgbySector_bar" class="ghgChart"></div>
+                    </div>
                 </div>
-                <div class="ghgChart-container chartHidden ghgAreaChart">
-                    <h4>1990-2017</h4>
-                    <div id="ghgbySector_area" class="ghgChart"></div>
+                <div class="scrolling-wrapper border">
+                    <div class="ghgChart-container chartHidden ghgAreaChart">
+                        <h4>1990-2017</h4>
+                        <div id="ghgbySector_area" class="ghgChart"></div>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-6 ghg-info">
-                <div class="ets">
-                    <h3>Emissions from large companies (ETS)</h3>
-                    <p>Any company or body within the EU that emits a large amount of greenhouse gas emissions is included in the Emissions Trading System, commonly known as the ETS for short. This includes large industries, electricity generators, and the
-                        aviation industry.
-                        <span>More Info</span>
-                        
-                        <span> The ETS ensures that all
-                these companies will collectively reduce their emissions by 21% by 2020 compared to 2005.
-                Companies in the ETS were responsible for 28% of Ireland's greenhouse gas emissions In 2017.</span>
-                <span>Less Info</span>
-                    </p>
+            <div class="col-lg-6">
+                <div class="ets-info chart-info--small">
+                    <h4>Emissions from large companies (ETS)</h4>
+                    <p>
+                        Any company or body within the EU that emits a large amount of greenhouse gas emissions is included in the Emissions Trading System, commonly known as the ETS for short. This includes large industries, electricity generators, and the aviation industry.
+                        <p>
+                            <p>
+                                The ETS ensures that all these companies will collectively reduce their emissions by 21% by 2020 compared to 2005. Companies in the ETS were responsible for 28% of Ireland's greenhouse gas emissions In 2017.
+                            </p>
+                            <span>More Info<i class="fas fa-arrow-down"></i></span>
+                            <span>Less Info<i class="fas fa-arrow-up"></i></span>
                 </div>
-                <div class="nonEts">
-                    <h3>Emissions from homes, small businesses and farms (Non-ETS)</h3>
+                <div class="nonEts-info chart-info--small">
+                    <h4>Emissions from homes, small businesses and farms (Non-ETS)</h4>
                     <p>All greenhouse gas emissions that are not from companies in the ETS are called non-ETS emissions. Non-ETS emissions include greenhouse gas emissions from homes, cars, small businesses and agriculture. These are often collectively called
                         the non-ETS sector.
-                        <span>More Info</span>
-                        <span>The biggest source of greenhouse gas emissions
-                            <!--in Ireland is CO2 emissions from the burning of fossil fuels in the non-ETS sector, for example in
-                            homes and cars. These made up 35% of all greenhouse gas emissions in Ireland in 2017, and 49% of all
-                            non-ETS greenhouse gas emissions. Other greenhouse gas emissions in the non-ETS sector, for instance from
-                            refrigeration or from landfill gases, made up 4% of all greenhouse gas emissions, or 5% of non-ETS emissions
-                            in 2017. Non-ETS emissions are important because each country in the EU has mandatory targets to reduce
-                            non-ETS emissions in 2020 and 2030. Ireland's target for 2020 is for non-ETS emissions to be 20% lower
-                            than they were in 2005. Currently we are on track to be just 1% lower.-->
-                        </span>
-                        <span>Less Info</span>
                     </p>
+                    <p>The biggest source of greenhouse gas emissions in Ireland is CO2 emissions from the burning of fossil fuels in the non-ETS sector, for example in homes and cars. These made up 35% of all greenhouse gas emissions in Ireland in 2017,
+                        and 49% of all non-ETS greenhouse gas emissions. Other greenhouse gas emissions in the non-ETS sector, for instance from refrigeration or from landfill gases, made up 4% of all greenhouse gas emissions, or 5% of non-ETS emissions
+                        in 2017. Non-ETS emissions are important because each country in the EU has mandatory targets to reduce non-ETS emissions in 2020 and 2030. Ireland's target for 2020 is for non-ETS emissions to be 20% lower than they were in 2005.
+                        Currently we are on track to be just 1% lower.
+                    </p>
+                    <span>More Info<i class="fas fa-arrow-down"></i></span>
+                    <span>Less Info<i class="fas fa-arrow-up"></i></span>
                 </div>
-                <div>
-                    <h3>Large share of agriculture</h3>
+                <div class="chart-info--small">
+                    <h4>Large share of agriculture</h4>
                     <p>
                         Ireland is unusual compared to other EU countries because greenhouse gas emissions from agriculture make up a much larger share of our emissions. In 2017 agriculture was responsible for 33% of all greenhouse gas emissions, and for 46% of all non-ETS greenhouse
                         gas emissions.
@@ -260,6 +282,27 @@
             </div>
         </div>
     </section>
+
+    <footer class="container-fluid">
+        <div class="row">
+            <div class="col-md-4">
+                Other Useful Resources:
+                <ul>
+                    <li><em><a href="https://www.seai.ie/resources/">SEAI: Sustainable Energy Authority of Ireland</a></em></li>
+                    <li><em></em><a href="https://www.epa.ie/">EPA: Environmental Protection Agency</a></em>
+                    </li>
+                    <li><em></em><a href="https://www.dccae.gov.ie/en-ie/energy/Pages/default.aspx">Department of Communications, Climate Action and Environment</a></em>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                © 2019 The Energy Statistics Co. All Rights Reserved.<br> Site by SOR Design Concepts
+            </div>
+        </div>
+
+    </footer>
+
+
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>

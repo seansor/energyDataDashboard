@@ -1,4 +1,4 @@
-Year,Births,Deaths,Natural increase,Immigrants,Emigrants,Net migration,Population change,Population,GNI
+Year,Births,Deaths,Natural increase,Immigrants,Emigrants,Net_migration,Population_change,Population,GNI
 1987,61.2,32.2,29,17.2,40.2,-23,5.9,"3,546.50",
 1988,57.8,31.6,26.2,19.2,61.1,-41.9,-15.8,"3,530.70",
 1989,53.6,31,22.6,26.7,70.6,-43.9,-21.2,"3,509.50",
