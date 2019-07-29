@@ -81,13 +81,17 @@ hr {
     display: none;
 }
 
+#sector_selector {
+    display: inline-block;
+}
+
+#fuel_selector {
+    display: inline-block;
+}
+
 .selectHidden {
     display: none;
 }
-
-/*.dc-chart path.area {
-    fill-opacity: .5;
-}*/
 
 .energyStats .section-heading {
     margin-left: -15px;
@@ -108,8 +112,9 @@ hr {
     padding-top: 10px;
 }
 
-.pieChart h4 {
-    padding-bottom: 20px;
+.pieChart span {
+    display: block;
+    padding-bottom: 25px;
 }
 
 .pieChart {
@@ -155,11 +160,7 @@ hr {
     border: solid 1px;
 }
 
-@media(min-width: 768px) {
-    .scrolling-wrapper {
-        justify-content: center;
-    }
-}
+
 
 .ghgChart-container {
     /*border: solid 1px;*/
@@ -209,6 +210,14 @@ a:hover {
     text-decoration: none;
 }
 
-/*.chart {
-    flex: 0 0 auto;
-}*/
+@media(min-width: 768px) {
+    .scrolling-wrapper {
+        justify-content: center;
+    }
+}
+
+@media(max-width: 400px) {
+    .ghgPieChart .dc-legend {
+        transform: translate(100,100);
+    }
+}

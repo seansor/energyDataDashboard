@@ -3,6 +3,7 @@ Promise.all([
     d3.csv("data/TFC.csv"),
     d3.csv("data/ghg.csv")
 ]).then(function(datafile) {
+    screenSize();
     colorArrays();
     makePopGraph(datafile[0]);
     showCurrentPop(datafile[0]);
@@ -10,9 +11,9 @@ Promise.all([
     makeGNIGraph(datafile[0]);
     showTFCdata(datafile[1]);
     makeTFCGraphs(datafile[1], colorArrays);
-    makeTFCPieCharts(datafile[1], colorArrays);
+    makeTFCPieCharts(datafile[1], colorArrays, screenSize());
     makeghgGraphs(datafile[2], colorArrays);
-    makeghgPieCharts(datafile[2], colorArrays);
+    makeghgPieCharts(datafile[2], colorArrays, screenSize());
 });
 
 function colorArrays() {
@@ -20,6 +21,27 @@ function colorArrays() {
     var colorsArrayDark = ['#3969b1', '#da7c30', '#3e9651', '#cc2529', '#535154', '#6b4c9a', '#922428', '#948b3d'];
     return [colorsArrayLight, colorsArrayDark];
 }
+
+function screenSize() {
+    let widthCheck = window.matchMedia("(max-width: 400px)");
+    return widthCheck;
+}
+    
+
+//widthCheck.addListener(legendPosition); // Attach listener function on state changes
+
+
+function positionLegend(widthCheck, chartName) {
+        
+        if (widthCheck.matches) {
+            chartName.legend(dc.legend().x(105).y(140).itemHeight(13).gap(5));
+        }
+        else {
+            chartName.legend(dc.legend().x(10).y(0).itemHeight(13).gap(5));
+        }
+    }
+
+    
 
 
 
@@ -207,34 +229,37 @@ function showTFCdata(data) {
                 p.yearTotal_17 += v.ktoe;
                 p.count17++;
             }
-            
-            if (p.yearTotal_16>0 && p.count17>0) {
-                p.change = (p.yearTotal_17/p.yearTotal_16)-1;
+
+            if (p.yearTotal_16 > 0 && p.count17 > 0) {
+                p.change = (p.yearTotal_17 / p.yearTotal_16) - 1;
             }
             return p;
         },
 
         function(p, v) {
             if (v.Year == 2016) {
-                if(p.yearTotal_16 == 0) {
+                if (p.yearTotal_16 == 0) {
                     p.change = 0;
-                } else {
+                }
+                else {
                     p.yearTotal_16 -= v.ktoe;
                     p.count16--;
                 }
             }
             else if (v.Year == 2017) {
-                if(p.count17=0) {
+                if (p.count17 = 0) {
                     p.yearTotal_17 = 0;
-                }else {
+                }
+                else {
                     p.yearTotal_17 -= v.ktoe;
                     p.count17--;
                 }
             }
-            
-            if (p.yearTotal_16>0 && p.count17>0) {
-                p.change = (p.yearTotal_17/p.yearTotal_16)-1;
-            }else{
+
+            if (p.yearTotal_16 > 0 && p.count17 > 0) {
+                p.change = (p.yearTotal_17 / p.yearTotal_16) - 1;
+            }
+            else {
                 p.change = 0;
             }
             return p;
@@ -252,20 +277,20 @@ function showTFCdata(data) {
         .valueAccessor(function(d) {
             return d.change;
         });
-        
-        
-        var transportPercentage = ndx.groupAll().reduce(
+
+
+    var transportPercentage = ndx.groupAll().reduce(
         function(p, v) {
             if (v.Year == 2017) {
                 p.total += v.ktoe;
-                if(v.Sector == "Transport"){
-                    p.transportTotal +=v.ktoe;
+                if (v.Sector == "Transport") {
+                    p.transportTotal += v.ktoe;
                 }
-                
+
             }
-            
-            if (p.total>0){
-                p.transportRatio = p.transportTotal/p.total;
+
+            if (p.total > 0) {
+                p.transportRatio = p.transportTotal / p.total;
             }
             return p;
         },
@@ -273,20 +298,20 @@ function showTFCdata(data) {
         function(p, v) {
             if (v.Year == 2017) {
                 p.total -= v.ktoe;
-                if(v.Sector == "Transport"){
-                    p.transportTotal -=v.ktoe;
+                if (v.Sector == "Transport") {
+                    p.transportTotal -= v.ktoe;
                 }
-                
+
             }
-            
-            if (p.total>0){
-                p.transportRatio = p.transportTotal/p.total;
+
+            if (p.total > 0) {
+                p.transportRatio = p.transportTotal / p.total;
             }
             return p;
         },
 
         function() {
-            return { total: 0, transportTotal: 0, transportRatio:0};
+            return { total: 0, transportTotal: 0, transportRatio: 0 };
         }
     );
 
@@ -297,20 +322,20 @@ function showTFCdata(data) {
         .valueAccessor(function(d) {
             return d.transportRatio;
         });
-        
-        
-        var oilPercentage = ndx.groupAll().reduce(
+
+
+    var oilPercentage = ndx.groupAll().reduce(
         function(p, v) {
             if (v.Year == 2017) {
                 p.total += v.ktoe;
-                if(v.Fuel == "Oil"){
-                    p.oilTotal +=v.ktoe;
+                if (v.Fuel == "Oil") {
+                    p.oilTotal += v.ktoe;
                 }
-                
+
             }
-            
-            if (p.total>0){
-                p.oilRatio = p.oilTotal/p.total;
+
+            if (p.total > 0) {
+                p.oilRatio = p.oilTotal / p.total;
             }
             return p;
         },
@@ -318,20 +343,20 @@ function showTFCdata(data) {
         function(p, v) {
             if (v.Year == 2017) {
                 p.total -= v.ktoe;
-                if(v.Sector == "oil"){
-                    p.oilTotal -=v.ktoe;
+                if (v.Sector == "oil") {
+                    p.oilTotal -= v.ktoe;
                 }
-                
+
             }
-            
-            if (p.total>0){
-                p.oilRatio = p.oilTotal/p.total;
+
+            if (p.total > 0) {
+                p.oilRatio = p.oilTotal / p.total;
             }
             return p;
         },
 
         function() {
-            return { total: 0, oilTotal: 0, oilRatio:0};
+            return { total: 0, oilTotal: 0, oilRatio: 0 };
         }
     );
 
@@ -387,13 +412,13 @@ function makeghgGraphs(data, colorArrays) {
         d.Emissions = parseInt(d.Emissions, 10);
 
         d.Sector == "Agriculture" ? d.sectorNum = 4 :
-        d.Sector == "Energy related Non-ETS" ? d.sectorNum = 3 :
-        d.Sector == "Other non-ETS" ? d.sectorNum = 2 :
-        d.sectorNum = 1;
+            d.Sector == "Energy related Non-ETS" ? d.sectorNum = 3 :
+            d.Sector == "Other non-ETS" ? d.sectorNum = 2 :
+            d.sectorNum = 1;
     });
-    
+
     var colorPalettes = colorArrays();
-    
+
 
     var ndx = crossfilter(data);
     makeghgSectorGraphs(ndx, colorPalettes);
@@ -409,7 +434,8 @@ function sector_selector(ndx) {
     var group = dim.group();
     var select = dc.selectMenu("#sector_selector")
         .dimension(dim)
-        .group(group);
+        .group(group)
+        .promptText("All Sectors");
 
     select.title(function(d) {
         return d.key;
@@ -424,11 +450,15 @@ function fuel_selector(ndx) {
     var group = dim.group();
     var select = dc.selectMenu("#fuel_selector")
         .dimension(dim)
-        .group(group);
+        .group(group)
+        .promptText("All Fuels");
 
     select.title(function(d) {
         return d.key;
     });
+    
+
+        
 }
 
 
@@ -452,7 +482,7 @@ function makeTFCSectorGraphs(ndx, colorPalettes) {
         return {};
     });
 
-    var filtered_group = remove_competely_empty_bins(energySumGroup); // fake groups to remove 0 value bins
+    var filtered_group = remove_completely_empty_bins(energySumGroup); // fake groups to remove 0 value bins
 
     function sel_stack(i) {
         return function(d) {
@@ -461,7 +491,7 @@ function makeTFCSectorGraphs(ndx, colorPalettes) {
     }
 
     var chart = dc.lineChart("#TFCbySector_area");
-    
+
     var colorPaletteLight = colorPalettes[0];
     var colorPaletteDark = colorPalettes[1];
 
@@ -517,7 +547,7 @@ function makeTFCSectorGraphs(ndx, colorPalettes) {
 
     //Removes 0 value bins for barchart (doesn't work for area chart)
 
-    function remove_competely_empty_bins(sourceGroup) {
+    function remove_completely_empty_bins(sourceGroup) {
         return {
             all: function() {
                 return sourceGroup.all().filter(function(d) {
@@ -528,7 +558,7 @@ function makeTFCSectorGraphs(ndx, colorPalettes) {
             }
         };
     }
-    
+
 
     //render barchart
 
@@ -600,7 +630,7 @@ function makeTFCFuelTypeGraphs(ndx, colorPalettes) {
     //render area chart
 
     var chart = dc.lineChart("#TFCbyFuel_area");
-    
+
     var colorPaletteLight = colorPalettes[0];
     var colorPaletteDark = colorPalettes[1];
 
@@ -694,11 +724,11 @@ function makeTFCFuelTypeGraphs(ndx, colorPalettes) {
 }
 
 
-function makeTFCPieCharts(data, colorArrays) {
+function makeTFCPieCharts(data, colorArrays, screenWidthCheck) {
 
     //Render Pie Chart
 
-    var ndx = crossfilter(data, );
+    var ndx = crossfilter(data);
     var sectorPieChart = dc.pieChart("#TFCbySector_pie");
     var fuelPieChart = dc.pieChart("#TFCbyFuel_pie");
 
@@ -714,7 +744,7 @@ function makeTFCPieCharts(data, colorArrays) {
 
     var sectorSumGroup = sector_dim.group().reduceSum(function(d) { return d.ktoe; });
     var fuelSumGroup = fuel_dim.group().reduceSum(function(d) { return d.ktoe; });
-    
+
     var colorPalettes = colorArrays();
     var colorPaletteLight = colorPalettes[0];
 
@@ -726,14 +756,14 @@ function makeTFCPieCharts(data, colorArrays) {
         .group(sectorSumGroup)
         .transitionDuration(500)
         .ordinalColors(colorPaletteLight)
-        .legend(dc.legend().x(10).y(0).itemHeight(13).gap(5))
-        // workaround for #703: not enough data is accessible through .label() to display percentages
         .on('pretransition', function(pieChart1) {
             pieChart1.selectAll('text.pie-slice').text(function(d) {
                 return dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2 * Math.PI) * 100) + '%';
             });
         });
         
+    positionLegend(screenWidthCheck, sectorPieChart);
+
 
     fuelPieChart
         .width(null)
@@ -746,8 +776,8 @@ function makeTFCPieCharts(data, colorArrays) {
         })
         .transitionDuration(500)
         .ordinalColors(colorPaletteLight)
-        .legend(dc.legend().x(10).y(0).itemHeight(13).gap(5))
-        
+        /*.legend(dc.legend().x(10).y(0).itemHeight(13).gap(5))*/
+
         .on('pretransition', function(pieChart1) {
             pieChart1.selectAll('text.pie-slice').text(function(d) {
                 if ((d.endAngle - d.startAngle) > (0.1 * Math.PI)) {
@@ -761,14 +791,17 @@ function makeTFCPieCharts(data, colorArrays) {
                 }
             });
         });
-        
+
+    positionLegend(screenWidthCheck, fuelPieChart);
+    
+
     dc.renderAll();
 }
 
 
 //Greenhouse Gas Emissions Charts
 
-function makeghgPieCharts(data, colorArrays) {
+function makeghgPieCharts(data, colorArrays, screenWidthCheck) {
 
     //Render Pie Chart
 
@@ -785,7 +818,7 @@ function makeghgPieCharts(data, colorArrays) {
 
 
     var sectorSumGroup = sector_dim.group().reduceSum(function(d) { return d.Emissions; });
-    
+
     var colorPalettes = colorArrays();
     var colorPaletteLight = colorPalettes[0];
 
@@ -797,13 +830,16 @@ function makeghgPieCharts(data, colorArrays) {
         .group(sectorSumGroup)
         .transitionDuration(500)
         .ordinalColors(colorPaletteLight)
-        .legend(dc.legend().x(10).y(0).itemHeight(13).gap(5))
+        /*.legend(dc.legend().x(10).y(0).itemHeight(13).gap(5))*/
         // workaround for #703: not enough data is accessible through .label() to display percentages
         .on('pretransition', function(pieChart) {
             pieChart.selectAll('text.pie-slice').text(function(d) {
                 return dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2 * Math.PI) * 100) + '%';
             });
         });
+        
+    //repositions pie chart legend on small screen sizes
+    positionLegend(screenWidthCheck, pieChart);
 
     dc.renderAll();
 }
@@ -836,7 +872,7 @@ function makeghgSectorGraphs(ndx, colorPalettes) {
     }
 
     var chart = dc.lineChart("#ghgbySector_area");
-    
+
     var colorPaletteLight = colorPalettes[0];
     var colorPaletteDark = colorPalettes[1];
 

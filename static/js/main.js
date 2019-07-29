@@ -7,11 +7,6 @@ $(document).ready(function() {
     $(".tfcChart-container").hide();
     $('.' + $(this).val()).show();
     
-    /*if ($(".scrolling-wrapper").height()>3){
-      $(".scrolling-wrapper").addClass("border");
-    } else {
-      $(".scrolling-wrapper").removeClass("border");
-    }*/
     
     
 
