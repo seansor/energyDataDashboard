@@ -3,7 +3,7 @@ body {
 }
 
 section {
-    padding-bottom:25px;
+    padding-bottom: 25px;
 }
 
 nav .navbar-brand {
@@ -62,7 +62,7 @@ hr {
 }
 
 .pop_gni-chart-container {
-    
+
     height: 400px;
     /*width: 600px;*/
 }
@@ -101,7 +101,7 @@ hr {
 .tfcChart-container {
     /*border: solid 1px;*/
     text-align: center;
-    height:550px;
+    height: 550px;
 }
 
 .tfcChart-container h4 {
@@ -112,8 +112,8 @@ hr {
     padding-bottom: 20px;
 }
 
-.pieChart{
-    height:500px;
+.pieChart {
+    height: 500px;
 }
 
 .tfcChart {
@@ -133,16 +133,14 @@ hr {
 
 .chart-info p,
 .chart-info span {
-    display:none;
+    display: none;
 }
 
 .chart-info span {
     cursor: pointer;
 }
 
-.year_selector {
-    
-}
+.year_selector {}
 
 .scrolling-wrapper {
     display: flex;
@@ -150,7 +148,7 @@ hr {
     overflow-x: auto;
     overflow-y: hidden;
     justify-content: center;
-    
+
 }
 
 .border {
@@ -166,6 +164,11 @@ hr {
 .ghgChart-container {
     /*border: solid 1px;*/
     padding-bottom: 25px;
+    margin-bottom: 25px;
+}
+
+.ets-info,
+.nonEts-info {
     margin-bottom: 25px;
 }
 

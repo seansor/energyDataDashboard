@@ -59,6 +59,10 @@ $(document).ready(function() {
     });
   });
   
+  //edit: move pie chart down when in mobile view
+  var pieChart = d3.select("#TFCbyFuel_pie");
+  
+  $("#TFCbyFuel_pie").children("svg g:first-child").attr("transform", "translate(156.5,250)");
   
   
 });
