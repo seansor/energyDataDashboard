@@ -1,6 +1,6 @@
 Promise.all([
-    d3.csv("data/populationStats.csv"),
-    d3.csv("data/TFC.csv"),
+    d3.csv("data/populationstats.csv"),
+    d3.csv("data/tfc.csv"),
     d3.csv("data/ghg.csv")
 ]).then(function(datafile) {
     makePopGraph(datafile[0]);
@@ -47,8 +47,6 @@ function makePopGraph(data) {
     });
 
     var year_dim = ndx.dimension(dc.pluck('Year'));
-
-    /*var population = year_dim.group().reduceSum(dc.pluck('Population'));*/
     
     var population = year_dim.group().reduceSum(function(d) {
         return d.Population/1000;
@@ -59,10 +57,8 @@ function makePopGraph(data) {
     var pop_dim = ndx.dimension(dc.pluck('Population'));
 
     var maxPop = (pop_dim.top(1)[0].Population)/1000;
-    
-    console.log(maxPop);
 
-    var chart = dc.lineChart("#population-chart")
+    var chart = dc.lineChart("#population-chart");
 
     chart
         .width(null)
@@ -180,7 +176,7 @@ function makeGNIGraph(data) {
     var minGNI = gni_dim.bottom(1)[0].GNI;
     var maxGNI = gni_dim.top(1)[0].GNI;
 
-    var chart = dc.lineChart("#gni-chart")
+    var chart = dc.lineChart("#gni-chart");
 
     chart
         .width(null)
@@ -534,7 +530,7 @@ function makeTFCSectorGraphs(ndx, colors) {
         return {
             all: function() {
                 return sourceGroup.all().filter(function(d) {
-                    for (i = 0; i < 5; i++) {
+                    for (let i = 0; i < 5; i++) {
                         return Object.values(d.value).some(v => v != 0);
                     }
                 });
@@ -906,8 +902,6 @@ function makeghgSectorGraphs(ndx, colors) {
     for (let i = 2; i < 5; i++) {
         chart.stack(filtered_group, '' + i, sel_stack(i));
     }
-
-    //Need to revisit this to remove 0 value bins
 
     function remove_competely_empty_bins(sourceGroup) {
         return {

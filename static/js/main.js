@@ -6,9 +6,6 @@ $(document).ready(function() {
   //show different charts depending on year range selected
     $(".tfcChart-container").hide();
     $('.' + $(this).val()).show();
-    
-    
-    
 
   //show or hide select sector menu depending on year date range selected
     if ($("#year_selector").val() == 'barChart' || $("#year_selector").val() == 'areaChart') {
@@ -16,7 +13,6 @@ $(document).ready(function() {
     } else {
       $('.selector-container').addClass("selectHidden");
     }
-    
   });
   
   //show or hide text under population and gni graphs
@@ -53,11 +49,5 @@ $(document).ready(function() {
         $('.nonEts-info span:last').toggle();
     });
   });
-  
-  //edit: move pie chart down when in mobile view
-  var pieChart = d3.select("#TFCbyFuel_pie");
-  
-  $("#TFCbyFuel_pie").children("svg g:first-child").attr("transform", "translate(156.5,250)");
-  
   
 });
