@@ -14,11 +14,9 @@ nav .fas {
     padding-right: 10px;
 }
 
-
 .keyStats .fas {
     padding-right: 10px;
 }
-
 
 .section-heading {
     text-align: center;
@@ -52,7 +50,6 @@ hr {
 
 .gni-chart-container {
     height: 400px;
-    /*width: 600px;*/
 }
 
 #gni-chart {
@@ -62,9 +59,7 @@ hr {
 }
 
 .pop_gni-chart-container {
-
     height: 400px;
-    /*width: 600px;*/
 }
 
 #population-chart {
@@ -145,8 +140,6 @@ hr {
     cursor: pointer;
 }
 
-.year_selector {}
-
 .scrolling-wrapper {
     display: flex;
     flex-wrap: nowrap;
@@ -159,8 +152,6 @@ hr {
 .border {
     border: solid 1px;
 }
-
-
 
 .ghgChart-container {
     /*border: solid 1px;*/
@@ -213,11 +204,5 @@ a:hover {
 @media(min-width: 768px) {
     .scrolling-wrapper {
         justify-content: center;
-    }
-}
-
-@media(max-width: 400px) {
-    .ghgPieChart .dc-legend {
-        transform: translate(100,100);
     }
 }

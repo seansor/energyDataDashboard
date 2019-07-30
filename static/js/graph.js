@@ -3,46 +3,39 @@ Promise.all([
     d3.csv("data/TFC.csv"),
     d3.csv("data/ghg.csv")
 ]).then(function(datafile) {
-    screenSize();
-    colorArrays();
     makePopGraph(datafile[0]);
     showCurrentPop(datafile[0]);
     showGNIdata(datafile[0]);
     makeGNIGraph(datafile[0]);
     showTFCdata(datafile[1]);
-    makeTFCGraphs(datafile[1], colorArrays);
-    makeTFCPieCharts(datafile[1], colorArrays, screenSize());
-    makeghgGraphs(datafile[2], colorArrays);
-    makeghgPieCharts(datafile[2], colorArrays, screenSize());
+    makeTFCGraphs(datafile[1], colors());
+    makeTFCPieCharts(datafile[1], colors(), screenSize());
+    makeghgGraphs(datafile[2], colors());
+    makeghgPieCharts(datafile[2], colors(), screenSize());
 });
 
-function colorArrays() {
-    var colorsArrayLight = ['#7294cb', '#e1974c', '#84ba5b', '#d35e60', '#808585', '#9067a7', '#ab6857', '#ccc210'];
-    var colorsArrayDark = ['#3969b1', '#da7c30', '#3e9651', '#cc2529', '#535154', '#6b4c9a', '#922428', '#948b3d'];
-    return [colorsArrayLight, colorsArrayDark];
+function colors() {
+    var colorsLight = ['#7294cb', '#e1974c', '#84ba5b', '#d35e60', '#808585', '#9067a7', '#ab6857', '#ccc210'];
+    var colorsDark = ['#3969b1', '#da7c30', '#3e9651', '#cc2529', '#535154', '#6b4c9a', '#922428', '#948b3d'];
+    return [colorsLight, colorsDark];
 }
+
 
 function screenSize() {
     let widthCheck = window.matchMedia("(max-width: 400px)");
     return widthCheck;
 }
-    
-
-//widthCheck.addListener(legendPosition); // Attach listener function on state changes
 
 
 function positionLegend(widthCheck, chartName) {
-        
-        if (widthCheck.matches) {
-            chartName.legend(dc.legend().x(105).y(140).itemHeight(13).gap(5));
-        }
-        else {
-            chartName.legend(dc.legend().x(10).y(0).itemHeight(13).gap(5));
-        }
+
+    if (widthCheck.matches) {
+        chartName.legend(dc.legend().x(100).y(140).itemHeight(13).gap(5));
     }
-
-    
-
+    else {
+        chartName.legend(dc.legend().x(10).y(0).itemHeight(13).gap(5));
+    }
+}
 
 
 function makePopGraph(data) {
@@ -53,18 +46,21 @@ function makePopGraph(data) {
         d.Year = parseInt(d.Year.replace(/,/g, ''), 10);
     });
 
-
     var year_dim = ndx.dimension(dc.pluck('Year'));
 
-    var population = year_dim.group().reduceSum(dc.pluck('Population'));
+    /*var population = year_dim.group().reduceSum(dc.pluck('Population'));*/
+    
+    var population = year_dim.group().reduceSum(function(d) {
+        return d.Population/1000;
+    });
 
-    var minDate = year_dim.bottom(1)[0].Year;
     var maxDate = year_dim.top(1)[0].Year;
 
     var pop_dim = ndx.dimension(dc.pluck('Population'));
 
-    var minPop = pop_dim.bottom(1)[0].Population;
-    var maxPop = pop_dim.top(1)[0].Population;
+    var maxPop = (pop_dim.top(1)[0].Population)/1000;
+    
+    console.log(maxPop);
 
     var chart = dc.lineChart("#population-chart")
 
@@ -76,9 +72,9 @@ function makePopGraph(data) {
         .dimension(year_dim)
         .group(population)
         .transitionDuration(500)
-        .y(d3.scaleLinear().domain([2000, maxPop]))
+        .y(d3.scaleLinear().domain([2, maxPop]))
         .x(d3.scaleLinear().domain([1990, maxDate]))
-        .yAxisLabel("'000 People")
+        .yAxisLabel("Million People")
         .xAxisLabel("Year")
         .brushOn(false)
         .renderDataPoints({ radius: 2, fillOpacity: 0.8, strokeOpacity: 0.0 });
@@ -123,12 +119,11 @@ function showGNIdata(data) {
 
     var year_dim = ndx.dimension(dc.pluck('Year'));
 
-
     year_dim.filter(function(d) {
         return (d > 2015 && d < 2018);
     });
 
-    var GNIincrease = ndx.groupAll().reduce(
+    var gniIncrease = ndx.groupAll().reduce(
         function(p, v) {
             p.count++;
             if (p.count < 2) {
@@ -160,12 +155,12 @@ function showGNIdata(data) {
     );
 
 
-    dc.numberDisplay("#GNIincrease")
+    dc.numberDisplay("#gniIncrease")
         .formatNumber(d3.format(",.1%"))
         .valueAccessor(function(d) {
             return d.increase - 1;
         })
-        .group(GNIincrease);
+        .group(gniIncrease);
 }
 
 
@@ -179,9 +174,6 @@ function makeGNIGraph(data) {
     var year_dim = ndx.dimension(dc.pluck('Year'));
 
     var gni_group = year_dim.group().reduceSum(dc.pluck('GNI'));
-
-    var minDate = year_dim.bottom(1)[0].Year;
-    var maxDate = year_dim.top(1)[0].Year;
 
     var gni_dim = ndx.dimension(dc.pluck('GNI'));
 
@@ -221,7 +213,7 @@ function showTFCdata(data) {
 
     var TFCchange = ndx.groupAll().reduce(
         function(p, v) {
-            if (v.Year == 2016) {
+            if (v.Year === 2016) {
                 p.yearTotal_16 += v.ktoe;
                 p.count16++;
             }
@@ -237,7 +229,7 @@ function showTFCdata(data) {
         },
 
         function(p, v) {
-            if (v.Year == 2016) {
+            if (v.Year === 2016) {
                 if (p.yearTotal_16 == 0) {
                     p.change = 0;
                 }
@@ -246,8 +238,8 @@ function showTFCdata(data) {
                     p.count16--;
                 }
             }
-            else if (v.Year == 2017) {
-                if (p.count17 = 0) {
+            else if (v.Year === 2017) {
+                if (p.count17 == 0) {
                     p.yearTotal_17 = 0;
                 }
                 else {
@@ -270,23 +262,20 @@ function showTFCdata(data) {
         }
     );
 
-
-    dc.numberDisplay("#TFCchange")
+    dc.numberDisplay("#tfcChange")
         .formatNumber(d3.format(",.1%"))
         .group(TFCchange)
         .valueAccessor(function(d) {
             return d.change;
         });
 
-
     var transportPercentage = ndx.groupAll().reduce(
         function(p, v) {
-            if (v.Year == 2017) {
+            if (v.Year === 2017) {
                 p.total += v.ktoe;
                 if (v.Sector == "Transport") {
                     p.transportTotal += v.ktoe;
                 }
-
             }
 
             if (p.total > 0) {
@@ -296,12 +285,11 @@ function showTFCdata(data) {
         },
 
         function(p, v) {
-            if (v.Year == 2017) {
+            if (v.Year === 2017) {
                 p.total -= v.ktoe;
                 if (v.Sector == "Transport") {
                     p.transportTotal -= v.ktoe;
                 }
-
             }
 
             if (p.total > 0) {
@@ -331,7 +319,6 @@ function showTFCdata(data) {
                 if (v.Fuel == "Oil") {
                     p.oilTotal += v.ktoe;
                 }
-
             }
 
             if (p.total > 0) {
@@ -346,7 +333,6 @@ function showTFCdata(data) {
                 if (v.Sector == "oil") {
                     p.oilTotal -= v.ktoe;
                 }
-
             }
 
             if (p.total > 0) {
@@ -370,7 +356,7 @@ function showTFCdata(data) {
 }
 
 
-function makeTFCGraphs(data, colorArrays) {
+function makeTFCGraphs(data, colors) {
 
     data.forEach(function(d) {
 
@@ -391,19 +377,18 @@ function makeTFCGraphs(data, colorArrays) {
             d.fuelNum = 7;
     });
 
-    var colorPalettes = colorArrays();
 
     var ndx = crossfilter(data);
     sector_selector(ndx);
     fuel_selector(ndx);
-    makeTFCSectorGraphs(ndx, colorPalettes);
-    makeTFCFuelTypeGraphs(ndx, colorPalettes);
+    makeTFCSectorGraphs(ndx, colors);
+    makeTFCFuelTypeGraphs(ndx, colors);
 
     dc.renderAll();
 }
 
 
-function makeghgGraphs(data, colorArrays) {
+function makeghgGraphs(data, colors) {
 
     data.forEach(function(d) {
 
@@ -417,11 +402,9 @@ function makeghgGraphs(data, colorArrays) {
             d.sectorNum = 1;
     });
 
-    var colorPalettes = colorArrays();
-
 
     var ndx = crossfilter(data);
-    makeghgSectorGraphs(ndx, colorPalettes);
+    makeghgSectorGraphs(ndx, colors);
 
     dc.renderAll();
 }
@@ -456,31 +439,31 @@ function fuel_selector(ndx) {
     select.title(function(d) {
         return d.key;
     });
-    
-
-        
 }
 
 
 //Total Final Consumption (TFC)/Total Final Energy Graphs
 
-function makeTFCSectorGraphs(ndx, colorPalettes) {
+function makeTFCSectorGraphs(ndx, colors) {
 
     var year_dim = ndx.dimension(dc.pluck('Year'));
 
     var minDate = year_dim.bottom(1)[0].Year;
     var maxDate = year_dim.top(1)[0].Year;
 
-    var energySumGroup = year_dim.group().reduce(function(p, v) {
+    var energySumGroup = year_dim.group().reduce(
 
-        p[v.sectorNum] = (p[v.sectorNum] || 0) + v.ktoe;
-        return p;
-    }, function(p, v) {
-        p[v.sectorNum] = (p[v.sectorNum] || 0) - v.ktoe;
-        return p;
-    }, function() {
-        return {};
-    });
+        function(p, v) {
+            p[v.sectorNum] = (p[v.sectorNum] || 0) + v.ktoe;
+            return p;
+        },
+        function(p, v) {
+            p[v.sectorNum] = (p[v.sectorNum] || 0) - v.ktoe;
+            return p;
+        },
+        function() {
+            return {};
+        });
 
     var filtered_group = remove_completely_empty_bins(energySumGroup); // fake groups to remove 0 value bins
 
@@ -492,8 +475,8 @@ function makeTFCSectorGraphs(ndx, colorPalettes) {
 
     var chart = dc.lineChart("#TFCbySector_area");
 
-    var colorPaletteLight = colorPalettes[0];
-    var colorPaletteDark = colorPalettes[1];
+    var colorsLight = colors[0];
+    var colorsDark = colors[1];
 
     chart
         .width(null)
@@ -503,7 +486,7 @@ function makeTFCSectorGraphs(ndx, colorPalettes) {
         .margins({ left: 50, top: 10, right: 10, bottom: 30 })
         .renderTitle(true)
         .renderArea(true)
-        .ordinalColors(colorPaletteDark)
+        .ordinalColors(colorsDark)
         .transitionDuration(500)
         .brushOn(false)
         .title(function(d) {
@@ -541,11 +524,11 @@ function makeTFCSectorGraphs(ndx, colorPalettes) {
 
     //loop to stack each sector
 
-    for (var i = 2; i < 6; i++) {
+    for (let i = 2; i < 6; i++) {
         chart.stack(filtered_group, '' + i, sel_stack(i));
     }
 
-    //Removes 0 value bins for barchart (doesn't work for area chart)
+    //Removes 0 value bins for barchart
 
     function remove_completely_empty_bins(sourceGroup) {
         return {
@@ -571,7 +554,7 @@ function makeTFCSectorGraphs(ndx, colorPalettes) {
         .x(d3.scaleLinear().domain([2008, maxDate + 1]))
         .margins({ left: 50, top: 100, right: 10, bottom: 30 })
         .renderTitle(true)
-        .ordinalColors(colorPaletteLight)
+        .ordinalColors(colorsLight)
         .transitionDuration(500)
         .brushOn(false)
         .title(function(d) {
@@ -597,29 +580,30 @@ function makeTFCSectorGraphs(ndx, colorPalettes) {
         return items.reverse();
     });
 
-    for (var i = 2; i < 6; i++) {
+    for (let i = 2; i < 6; i++) {
         barChart.stack(filtered_group, '' + i, sel_stack(i));
     }
-
 }
 
 
-function makeTFCFuelTypeGraphs(ndx, colorPalettes) {
+function makeTFCFuelTypeGraphs(ndx, colors) {
     var year_dim = ndx.dimension(dc.pluck('Year'));
 
     var minDate = year_dim.bottom(1)[0].Year;
     var maxDate = year_dim.top(1)[0].Year;
 
-    var energySumGroup = year_dim.group().reduce(function(p, v) {
-
-        p[v.fuelNum] = (p[v.fuelNum] || 0) + v.ktoe;
-        return p;
-    }, function(p, v) {
-        p[v.fuelNum] = (p[v.fuelNum] || 0) - v.ktoe;
-        return p;
-    }, function() {
-        return {};
-    });
+    var energySumGroup = year_dim.group().reduce(
+        function(p, v) {
+            p[v.fuelNum] = (p[v.fuelNum] || 0) + v.ktoe;
+            return p;
+        },
+        function(p, v) {
+            p[v.fuelNum] = (p[v.fuelNum] || 0) - v.ktoe;
+            return p;
+        },
+        function() {
+            return {};
+        });
 
     function sel_stack(i) {
         return function(d) {
@@ -631,8 +615,8 @@ function makeTFCFuelTypeGraphs(ndx, colorPalettes) {
 
     var chart = dc.lineChart("#TFCbyFuel_area");
 
-    var colorPaletteLight = colorPalettes[0];
-    var colorPaletteDark = colorPalettes[1];
+    var colorsLight = colors[0];
+    var colorsDark = colors[1];
 
     chart
         .width(null)
@@ -647,7 +631,7 @@ function makeTFCFuelTypeGraphs(ndx, colorPalettes) {
             return fuels[this.layer - 1] + ': ' + d.value[this.layer].toFixed(2);
         })
         .renderArea(true)
-        .ordinalColors(colorPaletteDark)
+        .ordinalColors(colorsDark)
         .brushOn(false)
         .clipPadding(10)
         .yAxisLabel("ktoe", 20)
@@ -676,7 +660,7 @@ function makeTFCFuelTypeGraphs(ndx, colorPalettes) {
         });
     });
 
-    for (var i = 2; i < 8; i++) {
+    for (let i = 2; i < 8; i++) {
         chart.stack(energySumGroup, '' + i, sel_stack(i));
     }
 
@@ -691,7 +675,7 @@ function makeTFCFuelTypeGraphs(ndx, colorPalettes) {
         .x(d3.scaleLinear().domain([2008, maxDate + 1]))
         .margins({ left: 50, top: 100, right: 10, bottom: 30 })
         .renderTitle(true)
-        .ordinalColors(colorPaletteLight)
+        .ordinalColors(colorsLight)
         .transitionDuration(500)
         .brushOn(false)
         .title(function(d) {
@@ -717,14 +701,14 @@ function makeTFCFuelTypeGraphs(ndx, colorPalettes) {
         return items.reverse();
     });
 
-    for (var i = 2; i < 8; i++) {
+    for (let i = 2; i < 8; i++) {
         barChart.stack(energySumGroup, '' + i, sel_stack(i));
     }
 
 }
 
 
-function makeTFCPieCharts(data, colorArrays, screenWidthCheck) {
+function makeTFCPieCharts(data, colors, screenWidthCheck) {
 
     //Render Pie Chart
 
@@ -745,8 +729,7 @@ function makeTFCPieCharts(data, colorArrays, screenWidthCheck) {
     var sectorSumGroup = sector_dim.group().reduceSum(function(d) { return d.ktoe; });
     var fuelSumGroup = fuel_dim.group().reduceSum(function(d) { return d.ktoe; });
 
-    var colorPalettes = colorArrays();
-    var colorPaletteLight = colorPalettes[0];
+    var colorsLight = colors[0];
 
     sectorPieChart
         .width(null)
@@ -754,16 +737,19 @@ function makeTFCPieCharts(data, colorArrays, screenWidthCheck) {
         .innerRadius(100)
         .dimension(sector_dim)
         .group(sectorSumGroup)
+        .title(function(d) {
+            return d.value +' ' + "ktoe";
+        })
         .transitionDuration(500)
-        .ordinalColors(colorPaletteLight)
+        .ordinalColors(colorsLight)
         .on('pretransition', function(pieChart1) {
             pieChart1.selectAll('text.pie-slice').text(function(d) {
                 return dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2 * Math.PI) * 100) + '%';
             });
         });
-        
-    positionLegend(screenWidthCheck, sectorPieChart);
 
+    //repositions pie chart legend on small screen sizes   
+    positionLegend(screenWidthCheck, sectorPieChart);
 
     fuelPieChart
         .width(null)
@@ -772,12 +758,10 @@ function makeTFCPieCharts(data, colorArrays, screenWidthCheck) {
         .dimension(fuel_dim)
         .group(fuelSumGroup)
         .title(function(d) {
-            return d.key + ': ' + d.value.toFixed(2) + ' ktoe';
+            return d.value.toFixed(2) + ' ' + 'ktoe';
         })
         .transitionDuration(500)
-        .ordinalColors(colorPaletteLight)
-        /*.legend(dc.legend().x(10).y(0).itemHeight(13).gap(5))*/
-
+        .ordinalColors(colorsLight)
         .on('pretransition', function(pieChart1) {
             pieChart1.selectAll('text.pie-slice').text(function(d) {
                 if ((d.endAngle - d.startAngle) > (0.1 * Math.PI)) {
@@ -792,8 +776,8 @@ function makeTFCPieCharts(data, colorArrays, screenWidthCheck) {
             });
         });
 
+    //repositions pie chart legend on small screen sizes
     positionLegend(screenWidthCheck, fuelPieChart);
-    
 
     dc.renderAll();
 }
@@ -801,7 +785,7 @@ function makeTFCPieCharts(data, colorArrays, screenWidthCheck) {
 
 //Greenhouse Gas Emissions Charts
 
-function makeghgPieCharts(data, colorArrays, screenWidthCheck) {
+function makeghgPieCharts(data, colors, screenWidthCheck) {
 
     //Render Pie Chart
 
@@ -816,11 +800,9 @@ function makeghgPieCharts(data, colorArrays, screenWidthCheck) {
 
     var sector_dim = ndx.dimension(dc.pluck('Sector'));
 
-
     var sectorSumGroup = sector_dim.group().reduceSum(function(d) { return d.Emissions; });
 
-    var colorPalettes = colorArrays();
-    var colorPaletteLight = colorPalettes[0];
+    var colorsLight = colors[0];
 
     pieChart
         .width(null)
@@ -828,16 +810,17 @@ function makeghgPieCharts(data, colorArrays, screenWidthCheck) {
         .innerRadius(100)
         .dimension(sector_dim)
         .group(sectorSumGroup)
+        .title(function(d) {
+            return d.value + ' ' + 'ktCO2';
+        })
         .transitionDuration(500)
-        .ordinalColors(colorPaletteLight)
-        /*.legend(dc.legend().x(10).y(0).itemHeight(13).gap(5))*/
-        // workaround for #703: not enough data is accessible through .label() to display percentages
+        .ordinalColors(colorsLight)
         .on('pretransition', function(pieChart) {
             pieChart.selectAll('text.pie-slice').text(function(d) {
                 return dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2 * Math.PI) * 100) + '%';
             });
         });
-        
+
     //repositions pie chart legend on small screen sizes
     positionLegend(screenWidthCheck, pieChart);
 
@@ -845,7 +828,7 @@ function makeghgPieCharts(data, colorArrays, screenWidthCheck) {
 }
 
 
-function makeghgSectorGraphs(ndx, colorPalettes) {
+function makeghgSectorGraphs(ndx, colors) {
 
     var year_dim = ndx.dimension(dc.pluck('Year'));
 
@@ -853,7 +836,6 @@ function makeghgSectorGraphs(ndx, colorPalettes) {
     var maxDate = year_dim.top(1)[0].Year;
 
     var emissionsSumGroup = year_dim.group().reduce(function(p, v) {
-
         p[v.sectorNum] = (p[v.sectorNum] || 0) + v.Emissions;
         return p;
     }, function(p, v) {
@@ -873,8 +855,8 @@ function makeghgSectorGraphs(ndx, colorPalettes) {
 
     var chart = dc.lineChart("#ghgbySector_area");
 
-    var colorPaletteLight = colorPalettes[0];
-    var colorPaletteDark = colorPalettes[1];
+    var colorsLight = colors[0];
+    var colorsDark = colors[1];
 
     chart
         .width(null)
@@ -884,7 +866,7 @@ function makeghgSectorGraphs(ndx, colorPalettes) {
         .margins({ left: 50, top: 10, right: 10, bottom: 30 })
         .renderTitle(true)
         .renderArea(true)
-        .ordinalColors(colorPaletteDark)
+        .ordinalColors(colorsDark)
         .transitionDuration(500)
         .brushOn(false)
         .title(function(d) {
@@ -905,7 +887,6 @@ function makeghgSectorGraphs(ndx, colorPalettes) {
             return (sectors[d.name - 1]);
         }));
 
-
     //reverse order of legend to match order of chart
     dc.override(chart, 'legendables', chart._legendables);
 
@@ -922,7 +903,7 @@ function makeghgSectorGraphs(ndx, colorPalettes) {
 
     //loop to stack each sector
 
-    for (var i = 2; i < 5; i++) {
+    for (let i = 2; i < 5; i++) {
         chart.stack(filtered_group, '' + i, sel_stack(i));
     }
 
@@ -932,7 +913,7 @@ function makeghgSectorGraphs(ndx, colorPalettes) {
         return {
             all: function() {
                 return sourceGroup.all().filter(function(d) {
-                    for (i = 0; i < 4; i++) {
+                    for (let i = 0; i < 4; i++) {
                         return Object.values(d.value).some(v => v != 0);
                     }
                 });
@@ -951,7 +932,7 @@ function makeghgSectorGraphs(ndx, colorPalettes) {
         .x(d3.scaleLinear().domain([2008, maxDate + 1]))
         .margins({ left: 50, top: 100, right: 10, bottom: 30 })
         .renderTitle(true)
-        .ordinalColors(colorPaletteLight)
+        .ordinalColors(colorsLight)
         .transitionDuration(500)
         .brushOn(false)
         .title(function(d) {
@@ -977,7 +958,7 @@ function makeghgSectorGraphs(ndx, colorPalettes) {
         return items.reverse();
     });
 
-    for (var i = 2; i < 5; i++) {
+    for (let i = 2; i < 5; i++) {
         barChart.stack(filtered_group, '' + i, sel_stack(i));
     }
 
